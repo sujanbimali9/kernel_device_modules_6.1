@@ -83,7 +83,7 @@ void mmc_mtk_biolog_check(struct mmc_host *mmc, unsigned long req_mask);
 
 #define mmc_mtk_biolog_send_command(...)
 #define mmc_mtk_biolog_transfer_req_compl(...)
-#define mmc_mtk_biolog_init(...)
+inline int mmc_mtk_biolog_init(struct mmc_host *mmc) { return 0; }
 #define mmc_mtk_biolog_exit(...)
 #define mmc_mtk_biolog_check(...)
 
