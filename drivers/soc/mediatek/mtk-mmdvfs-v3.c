@@ -991,7 +991,7 @@ int mtk_mmdvfs_v3_set_force_step(const u16 pwr_idx, const s16 opp, const bool cm
 {
 	int *last, ret;
 
-	if (pwr_idx >= PWR_MMDVFS_NUM || opp >= MAX_OPP) {
+	if (pwr_idx >= PWR_MMDVFS_NUM || opp >= MAX_OPP || opp < -1) {
 		MMDVFS_ERR("wrong pwr_idx:%hu opp:%hd", pwr_idx, opp);
 		return -EINVAL;
 	}
@@ -1042,7 +1042,7 @@ static int mmdvfs_set_force_step(const char *val, const struct kernel_param *kp)
 	int ret;
 
 	ret = sscanf(val, "%hu %hd", &idx, &opp);
-	if (ret != 2 || idx >= PWR_MMDVFS_NUM || opp >= MAX_OPP || mmdvfs_release_step_done) {
+	if (ret != 2 || idx >= PWR_MMDVFS_NUM || opp >= MAX_OPP || opp < -1 || mmdvfs_release_step_done) {
 		MMDVFS_ERR("input failed:%d idx:%hu opp:%hd release_step:%hd",
 			ret, idx, opp, mmdvfs_release_step_done);
 		return -EINVAL;
@@ -1269,7 +1269,7 @@ int mtk_mmdvfs_v3_set_vote_step(const u16 pwr_idx, const s16 opp, const bool cmd
 {
 	int *last, ret = 0;
 
-	if (pwr_idx > PWR_MMDVFS_NUM || opp >= MAX_OPP) {
+	if (pwr_idx > PWR_MMDVFS_NUM || opp >= MAX_OPP || opp < -1) {
 		MMDVFS_ERR("failed:%d pwr_idx:%hu opp:%hd", ret, pwr_idx, opp);
 		return -EINVAL;
 	}
@@ -1306,7 +1306,7 @@ static int mmdvfs_set_vote_step(const char *val, const struct kernel_param *kp)
 	s16 opp = 0;
 
 	ret = sscanf(val, "%hu %hd", &idx, &opp);
-	if (ret != 2 || idx >= PWR_MMDVFS_NUM || opp >= MAX_OPP || mmdvfs_release_step_done) {
+	if (ret != 2 || idx >= PWR_MMDVFS_NUM || opp >= MAX_OPP || opp < -1 || mmdvfs_release_step_done) {
 		MMDVFS_ERR("failed:%d idx:%hu opp:%hd release_step:%hd",
 			ret, idx, opp, mmdvfs_release_step_done);
 		return -EINVAL;
