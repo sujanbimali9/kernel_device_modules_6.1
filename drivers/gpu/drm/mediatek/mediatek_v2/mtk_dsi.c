@@ -3665,7 +3665,8 @@ static void mtk_output_dsi_enable(struct mtk_dsi *dsi,
 		if ((mtk_crtc->res_switch == RES_SWITCH_NO_USE)
 			&& (mode_id != 0)
 			&& (mtk_dsi_is_cmd_mode(&dsi->ddp_comp) ||
-				mode_chg_index & MODE_DSI_HFP)) {
+				(mode_chg_index & MODE_DSI_HFP) ||
+				(mode_chg_index & MODE_DSI_VFP))) {
 			if (dsi->ext && dsi->ext->funcs &&
 				dsi->ext->funcs->mode_switch) {
 				DDPMSG("%s do lcm mode_switch to %u\n",
