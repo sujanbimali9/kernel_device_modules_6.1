@@ -17967,6 +17967,15 @@ tboard_thermistor1: thermal-ntc1@1cc00554 {
 };
 /* WF GPIO end */
 
+&mtk_leds {
+	compatible = "mediatek,i2c-leds";
+	backlight {
+		led-mode = <6>;
+		gate-enable = <1>;
+		pwm-config = <0 1 0 0 0>;
+	};
+};
+
 &spmi {
 	pmic: pmic@4 {
 		mt6363_dynamic_loading_throttling: mtk-dynamic-loading-throttling {
