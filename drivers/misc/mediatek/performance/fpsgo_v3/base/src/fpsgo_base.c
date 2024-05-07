@@ -1738,6 +1738,8 @@ static void fpsgo_check_acquire_info_status(void)
 static void fpsgo_check_adpf_render_status(void)
 {
 	int local_tgid = 0;
+	int local_rtid = 0;
+	unsigned long long local_bufID = 0;
 	struct render_info *iter = NULL;
 	struct rb_node *rbn = NULL;
 
@@ -1756,12 +1758,13 @@ static void fpsgo_check_adpf_render_status(void)
 			rbn = rb_next(rbn);
 			fpsgo_thread_unlock(&iter->thr_mlock);
 		} else {
-			rb_erase(rbn, &render_pid_tree);
-			total_render_info_num--;
-			fpsgo_fstb2other_info_update(iter->pid,
-				iter->buffer_id, FPSGO_DELETE, 0, 0, 0, 0);
+			local_tgid = iter->tgid;
+			local_rtid = iter->pid;
+			local_bufID = iter->buffer_id;
 			fpsgo_thread_unlock(&iter->thr_mlock);
-			vfree(iter);
+			fpsgo_render_tree_unlock(__func__);
+			fpsgo_ctrl2comp_adpf_close(local_tgid, local_rtid, local_bufID);
+			fpsgo_render_tree_lock(__func__);
 			rbn = rb_first(&render_pid_tree);
 		}
 	}
