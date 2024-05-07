@@ -15,6 +15,7 @@
 #include <linux/irqchip/chained_irq.h>
 #include <linux/irqdomain.h>
 #include <linux/kernel.h>
+#include <linux/kmemleak.h>
 #include <linux/kthread.h>
 #include <linux/module.h>
 #include <linux/msi.h>
@@ -1344,6 +1345,7 @@ static int mtk_pcie_probe(struct platform_device *pdev)
 	if (!host)
 		return -ENOMEM;
 
+	kmemleak_not_leak(host);
 	port = pci_host_bridge_priv(host);
 
 	port->dev = dev;
