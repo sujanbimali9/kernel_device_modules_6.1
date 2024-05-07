@@ -19,6 +19,7 @@
 #include <linux/kallsyms.h>
 #include <uapi/linux/sched/types.h>
 #include <trace/hooks/cpufreq.h>
+#include "mtk_irq_mon.h"
 #include "sugov/cpufreq.h"
 
 #include "mt-plat/fpsgo_common.h"
@@ -1287,11 +1288,7 @@ static void fpsgo_cpu_frequency_cap_tracer(void *ignore, struct cpufreq_policy *
 	unsigned int cpu_id = 0, cpu = 0, cluster = 0, capacity;
 	struct cpufreq_policy *cpus_policy = NULL;
 
-#if IS_ENABLED(CONFIG_MTK_IRQ_MONITOR_DEBUG)
-	u64 ts[2];
-
-	ts[0] = sched_clock();
-#endif
+	irq_log_store();
 
 	if (!policy)
 		return;
@@ -1310,7 +1307,11 @@ static void fpsgo_cpu_frequency_cap_tracer(void *ignore, struct cpufreq_policy *
 		cpufreq_cpu_put(cpus_policy);
 	}
 
+	irq_log_store();
+
 	capacity = get_curr_cap(cpu);
+
+	irq_log_store();
 
 	if (capacity)
 		fpsgo_notify_cpufreq_cap(cluster, capacity);
@@ -1318,14 +1319,7 @@ static void fpsgo_cpu_frequency_cap_tracer(void *ignore, struct cpufreq_policy *
 		FPSGO_LOGE("[%s] cluster:%d, cpu:%d, freq:%d\n", __func__,
 			cluster, cpu_id, capacity);
 
-#if IS_ENABLED(CONFIG_MTK_IRQ_MONITOR_DEBUG)
-	ts[1] = sched_clock();
-
-	if ((ts[1] - ts[0] > 100000ULL) && in_hardirq()) {
-		printk_deferred("%s duration %llu, ts[0]=%llu, ts[1]=%llu\n",
-			__func__, ts[1] - ts[0], ts[0], ts[1]);
-	}
-#endif
+	irq_log_store();
 }
 
 void register_fpsgo_android_cpufreq_transition_hook(void)
