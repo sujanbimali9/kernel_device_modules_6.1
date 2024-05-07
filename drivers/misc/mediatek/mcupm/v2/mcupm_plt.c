@@ -54,6 +54,75 @@ static ssize_t mcupm_alive_show(struct device *kobj,
 }
 DEVICE_ATTR_RO(mcupm_alive);
 
+static ssize_t mcupm_dvcs_enable_show(struct device *kobj,
+				 struct device_attribute *attr, char *buf)
+{
+	struct mcupm_ipi_data_s ipi_data;
+	int ret = 0;
+
+	ipi_data.cmd = 0x504C5404;
+	mcupm_plt_ackdata = 0;
+
+	ret = mtk_ipi_send_compl(&mcupm_ipidev, CH_S_PLATFORM, IPI_SEND_WAIT,
+		&ipi_data,
+		sizeof(struct mcupm_ipi_data_s) / MCUPM_MBOX_SLOT_SIZE,
+		2000);
+	if (mcupm_plt_ackdata == 1)
+		return snprintf(buf, PAGE_SIZE, "MCUPM DVCS Enable\n");
+	else if (mcupm_plt_ackdata == 0)
+		return snprintf(buf, PAGE_SIZE, "MCUPM DVCS Disable\n");
+
+	return snprintf(buf, PAGE_SIZE, "not support Qurey MCUPM DVCS\n");
+}
+DEVICE_ATTR_RO(mcupm_dvcs_enable);
+
+static unsigned int efuse_addr;
+static ssize_t mcupm_efuse_read_show(
+	struct device *kobj,
+	struct device_attribute *attr,
+	char *buf)
+{
+	struct mcupm_ipi_data_s ipi_data;
+
+	int ret = 0;
+
+	ipi_data.cmd = 0x504C5405;
+	ipi_data.u.ctrl.phys = efuse_addr;
+	ipi_data.u.ctrl.size = 4;
+	mcupm_plt_ackdata = 0;
+
+	if (efuse_addr > 0) {
+		ret = mtk_ipi_send_compl(&mcupm_ipidev, CH_S_PLATFORM, IPI_SEND_WAIT,
+			&ipi_data,
+			sizeof(struct mcupm_ipi_data_s) / MCUPM_MBOX_SLOT_SIZE,
+			2000);
+	}
+
+	return snprintf(buf, PAGE_SIZE, "MCUPM read 0x%X=0x%X\n",
+			efuse_addr, mcupm_plt_ackdata);
+}
+
+static ssize_t mcupm_efuse_read_store(
+	struct device *dev,
+	struct device_attribute *attr,
+	const char *buf,
+	size_t count)
+{
+	int ret = 0;
+
+	if ((count == 0) || (buf == NULL))
+		return -EINVAL;
+
+	ret = kstrtou32(buf, 0, &efuse_addr);
+	if (ret != 0) {
+		free_page((unsigned long)buf);
+		return -EINVAL;
+	}
+
+	return count;
+}
+DEVICE_ATTR_RW(mcupm_efuse_read);
+
 static ssize_t mpmm_show(struct device *kobj,
 				 struct device_attribute *attr, char *buf)
 {
@@ -130,6 +199,14 @@ int mcupm_plt_module_init(void)
 	}
 
 	ret = mcupm_sysfs_create_file(&dev_attr_mcupm_alive);
+	if (unlikely(ret != 0))
+		goto error;
+
+	ret = mcupm_sysfs_create_file(&dev_attr_mcupm_dvcs_enable);
+	if (unlikely(ret != 0))
+		goto error;
+
+	ret = mcupm_sysfs_create_file(&dev_attr_mcupm_efuse_read);
 	if (unlikely(ret != 0))
 		goto error;
 
