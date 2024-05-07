@@ -2022,6 +2022,7 @@ static int vidioc_venc_qbuf(struct file *file, void *priv,
 		if (IS_ERR(mtkbuf->frm_buf.qpmap_dma)) {
 			mtk_v4l2_err("%s qpmap_dma is err 0x%p.\n", __func__,
 				mtkbuf->frm_buf.qpmap_dma);
+			mtkbuf->frm_buf.qpmap_dma = 0;
 			mtk_venc_queue_error_event(ctx);
 			return -EINVAL;
 		}
@@ -2138,6 +2139,7 @@ static int vidioc_venc_qbuf(struct file *file, void *priv,
 					if (IS_ERR(mtkbuf->frm_buf.qpmap_dma)) {
 						mtk_v4l2_err("%s qpmap_dma is err 0x%p.\n",
 							__func__, mtkbuf->frm_buf.qpmap_dma);
+						mtkbuf->frm_buf.qpmap_dma = 0;
 						mtk_venc_queue_error_event(ctx);
 						continue;
 					}
@@ -2712,7 +2714,7 @@ static void vb2ops_venc_buf_finish(struct vb2_buffer *vb)
 		mtkbuf->frm_buf.metabuffer_dma = 0;
 	}
 
-	if (mtkbuf->frm_buf.qpmap_dma != 0) {
+	if (!IS_ERR_OR_NULL(mtkbuf->frm_buf.qpmap_dma)) {
 		mtk_v4l2_debug(2, "dma_buf_put qpmap_dma=%p, DMA=%lx",
 			mtkbuf->frm_buf.qpmap_dma,
 			(unsigned long)mtkbuf->frm_buf.qpmap_dma_addr);
