@@ -662,6 +662,17 @@ unsigned long ged_query_info(GED_INFO eType)
 }
 EXPORT_SYMBOL(ged_query_info);
 
+bool ged_gpu_is_heavy(void)
+{
+	unsigned int gpu_loading;
+	int freq_id = ged_get_cur_oppidx();
+
+	gpu_loading = gpu_util_history_query_loading(16 * 1000);
+
+	return ((gpu_loading >= 85) && (freq_id <= 5));
+}
+EXPORT_SYMBOL(ged_gpu_is_heavy);
+
 void ged_opp_stat_step(void)
 {
 	int cur_idx = gpufreq_get_cur_oppidx(TARGET_DEFAULT);
