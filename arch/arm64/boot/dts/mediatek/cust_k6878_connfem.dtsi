@@ -11,7 +11,9 @@
 			<&sky85320 &sky85720>,		/* [4]MT6631, Skyworks eFEM - Closed-Loop */
 			<&sky85320 &sky85720>,		/* [5]MT6631/MT6686, Skyworks eFEM - Closed-Loop */
 			<&qm42195 &qm45197>,		/* [6]MT6637, Qorvo eFEM - Closed-Loop */
-			<&wlan7207h &wlan7207c>;	/* [7]MT6637, NXP eFEM - Closed-Loop */
+			<&wlan7207h &wlan7207c>,	/* [7]MT6637, NXP eFEM - Closed-Loop */
+			<&nofem &sky85732>,		/* [8]Skyworks eFEM - Closed-Loop */
+			<&nofem &sky85732>;		/* [9]Skyworks eFEM - Closed-Loop + BT Bypass */
 
 		hwid {
 			gpio = <&pio 131 0x0>,
@@ -35,6 +37,12 @@
 			flags-7 {
 				/* open-loop; */
 			};
+			flags-8 {
+				/* open-loop; */
+			};
+			flags-9 {
+				/* open-loop; */
+			};
 		};
 		bt {
 			flags-3 {
@@ -56,6 +64,14 @@
 			flags-7 {
 				/* choose one of: epa-elna / epa / elna / bypass */
 				epa-elna;
+			};
+			flags-8 {
+				/* choose one of: epa-elna / epa / elna / bypass */
+				epa-elna;
+			};
+			flags-9 {
+				/* choose one of: epa-elna / epa / elna / bypass */
+				bypass;
 			};
 		};
 	};
