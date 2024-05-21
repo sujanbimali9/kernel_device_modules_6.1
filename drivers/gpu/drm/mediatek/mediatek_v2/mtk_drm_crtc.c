@@ -19613,8 +19613,11 @@ int mtk_crtc_mipi_freq_switch(struct drm_crtc *crtc, unsigned int en,
 
 	DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
 
-	mtk_crtc->mipi_hopping_sta = en;
-
+	if (!mtk_crtc->already_first_config) {
+		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+		DDPMSG("%s, atomic havn't configed yet, skip mipi hopping\n", __func__);
+		return 0;
+	}
 
 	comp = mtk_ddp_comp_request_output(mtk_crtc);
 	if (!comp) {
@@ -19622,7 +19625,7 @@ int mtk_crtc_mipi_freq_switch(struct drm_crtc *crtc, unsigned int en,
 		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 		return -EINVAL;
 	}
-
+	mtk_crtc->mipi_hopping_sta = en;
 	mtk_ddp_comp_io_cmd(comp,
 			NULL, MIPI_HOPPING, &en);
 

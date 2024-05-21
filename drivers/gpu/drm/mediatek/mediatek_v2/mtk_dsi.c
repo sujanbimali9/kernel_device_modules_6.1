@@ -2265,6 +2265,9 @@ static void mtk_dsi_calc_vdo_timing(struct mtk_dsi *dsi)
 	dsi->hfp_byte = horizontal_frontporch_byte;
 	dsi->hbp_byte = horizontal_backporch_byte;
 	dsi->hsa_byte = horizontal_sync_active_byte;
+
+	DDPINFO("%s, vfp:%d, vbp:%d, vsa:%d, hfp_byte:%d, hbp_byte:%d, hsa_byte:%d\n", __func__,
+		dsi->vfp, dsi->vbp, dsi->vsa, dsi->hfp_byte, dsi->hbp_byte, dsi->hsa_byte);
 }
 
 static void mtk_dsi_config_vdo_timing(struct mtk_dsi *dsi)
