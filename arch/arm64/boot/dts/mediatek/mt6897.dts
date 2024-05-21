@@ -8012,6 +8012,7 @@
 				<0 0x13fa0000 0 0x400>,   /* MFG_PLL */
 				<0 0x13fa0c00 0 0x400>,   /* MFGSC_PLL */
 				<0 0x13f90000 0 0x10000>, /* MFG_RPC */
+				<0 0x13c62000 0 0xb0>,    /* GPUEB_MBOX */
 				<0 0x1c001000 0 0x1000>,  /* SLEEP */
 				<0 0x10000000 0 0x1000>,  /* TOPCKGEN */
 				<0 0x1021c000 0 0x1000>,  /* NTH_EMICFG */
@@ -8039,6 +8040,7 @@
 				"mfg_pll",
 				"mfgsc_pll",
 				"mfg_rpc",
+				"gpueb_mbox",
 				"sleep",
 				"topckgen",
 				"nth_emicfg",
