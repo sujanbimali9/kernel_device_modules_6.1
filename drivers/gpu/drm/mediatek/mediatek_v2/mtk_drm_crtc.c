@@ -3498,6 +3498,7 @@ static void mtk_crtc_update_hrt_usage(struct drm_crtc *crtc, bool hrt_valid)
 	struct drm_plane *plane = NULL;
 	unsigned int plane_mask = 0;
 	struct mtk_drm_private *priv = NULL;
+	struct mtk_drm_crtc *mtk_crtc = NULL;
 
 	if (crtc && crtc->state) {
 		plane_mask = crtc->state->plane_mask;
@@ -3521,7 +3522,24 @@ static void mtk_crtc_update_hrt_usage(struct drm_crtc *crtc, bool hrt_valid)
 		mtk_ddp_comp_io_cmd(comp, NULL, OVL_PHY_USAGE, plane_state);
 	}
 
+	mtk_crtc = to_mtk_crtc(crtc);
 	priv = crtc->dev->dev_private;
+
+	/* For Assert layer */
+	if (mtk_crtc && mtk_drm_dal_enable()) {
+		mtk_crtc->usage_ovl_fmt[5] = 2;
+		DDPINFO("%s: need handle dal layer, bpp:%d\n",
+			__func__, mtk_crtc->usage_ovl_fmt[5]);
+	}
+
+	/* For TUI layer */
+	if (mtk_crtc && mtk_crtc->crtc_blank) {
+		if (priv && priv->data->mmsys_id == MMSYS_MT6989)
+			mtk_crtc->usage_ovl_fmt[2] = 4;
+		DDPINFO("%s: need handle TUI layer, bpp:%d\n",
+			__func__, mtk_crtc->usage_ovl_fmt[2]);
+	}
+
 	if (priv && mtk_drm_helper_get_opt(priv->helper_opt,
 		MTK_DRM_OPT_LAYERING_RULE_BY_LARB)) {
 		struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
@@ -6272,15 +6290,17 @@ static void mtk_crtc_update_ddp_state(struct drm_crtc *crtc,
 	/*set_hrt_bw for pan display ,set 4 for two RGB layer*/
 	if ((index == 0 || mtk_crtc->path_data->is_discrete_path) && hrt_valid == false) {
 		if (mtk_drm_helper_get_opt(mtk_drm->helper_opt, MTK_DRM_OPT_HRT)) {
-			DDPMSG("%s frame:%u correct invalid hrt to:%u, mode:%llu->%llu\n",
-				__func__, prop_lye_idx, pan_disp_frame_weight,
-				old_mtk_state->prop_val[CRTC_PROP_DISP_MODE_IDX],
-				crtc_state->prop_val[CRTC_PROP_DISP_MODE_IDX]);
 			if (mtk_drm_helper_get_opt(mtk_drm->helper_opt,
 					MTK_DRM_OPT_LAYERING_RULE_BY_LARB)) {
 				memset(mtk_crtc->usage_ovl_fmt, 0, sizeof(mtk_crtc->usage_ovl_fmt));
 				mtk_crtc->usage_ovl_weight[0] = pan_disp_frame_weight;
 			}
+			mtk_crtc->usage_ovl_fmt[0] = 4;
+			DDPMSG("%s frame:%u correct invalid hrt to:%u,mode:%llu->%llu,bpp:%u,w:%u\n",
+				__func__, prop_lye_idx, pan_disp_frame_weight,
+				old_mtk_state->prop_val[CRTC_PROP_DISP_MODE_IDX],
+				crtc_state->prop_val[CRTC_PROP_DISP_MODE_IDX],
+				mtk_crtc->usage_ovl_fmt[0], mtk_crtc->usage_ovl_weight[0]);
 		}
 		/*
 		 * prop_lye_idx is 0 when suspend. Update display mode to avoid
@@ -11512,6 +11532,7 @@ void mtk_drm_crtc_enable(struct drm_crtc *crtc)
 
 	mtk_crtc->qos_ctx->last_hrt_req = 0;
 	mtk_crtc->qos_ctx->last_larb_hrt_max = 0;
+	mtk_crtc->usage_ovl_fmt[0] = 4;
 
 	/* 7. config ddp engine */
 	mtk_crtc_config_default_path(mtk_crtc);

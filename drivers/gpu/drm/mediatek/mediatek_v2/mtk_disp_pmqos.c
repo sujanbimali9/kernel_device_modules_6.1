@@ -612,6 +612,8 @@ int mtk_disp_set_per_larb_hrt_bw(struct mtk_drm_crtc *mtk_crtc, unsigned int bw)
 		return 0;
 
 	comp = mtk_ddp_comp_request_output(mtk_crtc);
+	if (bw == 0 && crtc_idx == 0)
+		total = bw;
 
 	if (comp && mtk_ddp_comp_get_type(comp->id) == MTK_DSI) {
 		if (total > 0) {
@@ -621,6 +623,11 @@ int mtk_disp_set_per_larb_hrt_bw(struct mtk_drm_crtc *mtk_crtc, unsigned int bw)
 					tmp1 = mtk_disp_larb_hrt_bw_MT6989(mtk_crtc, total, bw_base);
 				else
 					tmp1 = bw;
+			}
+		} else {
+			if (priv->data->mmsys_id == MMSYS_MT6989) {
+				DDPMSG("%s, crtc:%d clear channel BW, bw:%u", __func__, crtc_idx, bw);
+				tmp1 = bw;
 			}
 		}
 
@@ -639,6 +646,7 @@ void mtk_drm_pan_disp_set_hrt_bw(struct drm_crtc *crtc, const char *caller)
 	struct mtk_drm_crtc *mtk_crtc;
 	struct drm_display_mode *mode;
 	unsigned int bw = 0;
+	struct mtk_drm_private *priv;
 
 	if (drm_crtc_index(crtc) == 0)
 		dev_crtc = crtc;
@@ -648,7 +656,18 @@ void mtk_drm_pan_disp_set_hrt_bw(struct drm_crtc *crtc, const char *caller)
 	bw = _layering_get_frame_bw(crtc, mode);
 	mtk_crtc_init_hrt_usage(crtc);
 	mtk_disp_set_hrt_bw(mtk_crtc, bw);
-	DDPINFO("%s:pan_disp_set_hrt_bw: %u\n", caller, bw);
+
+	mtk_crtc->usage_ovl_fmt[0] = 4;
+	priv = mtk_crtc->base.dev->dev_private;
+	if (priv && mtk_drm_helper_get_opt(priv->helper_opt, MTK_DRM_OPT_HRT_BY_LARB) &&
+		priv->data->mmsys_id == MMSYS_MT6989) {
+		mtk_disp_set_per_larb_hrt_bw(mtk_crtc, bw);
+		mtk_crtc->qos_ctx->last_larb_hrt_max = bw;
+	} else
+		DDPMSG("%s: invalid priv\n", __func__);
+
+	DDPMSG("%s: crtc:%d pan_disp_set_hrt_bw:%u, last channel:%u\n", caller, drm_crtc_index(crtc), bw,
+		mtk_crtc->qos_ctx->last_larb_hrt_max);
 }
 
 void mtk_disp_hrt_repaint_blocking(const unsigned int hrt_idx)

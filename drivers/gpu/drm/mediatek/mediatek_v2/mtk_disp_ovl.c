@@ -2803,6 +2803,16 @@ static void mtk_ovl_layer_config(struct mtk_ddp_comp *comp, unsigned int idx,
 			comp->regs_pa + DISP_REG_OVL_LC_SRC_SEL, value, mask);
 	}
 
+	if (priv->data->mmsys_id == MMSYS_MT6989) {
+		if (pending->enable) {//enable and not ext layer
+			if (ext_lye_idx == 0)
+				mtk_crtc->usage_ovl_fmt[(ovl->data->ovl_phy_mapping(comp) + lye_idx)] =
+					mtk_get_format_bpp(fmt);
+		} else {
+			mtk_crtc->usage_ovl_fmt[(ovl->data->ovl_phy_mapping(comp) + lye_idx)] = 0;
+		}
+	}
+
 #define _LAYER_CONFIG_FMT \
 	"%s %s idx:%d lye_idx:%d ext_idx:%d en:%d fmt:0x%x " \
 	"addr:0x%lx compr:%d con:0x%x offset:0x%x lye_cap:%x mml:%d\n"
