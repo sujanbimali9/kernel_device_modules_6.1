@@ -1348,6 +1348,25 @@ err_setup:
 	return err;
 }
 
+static int __maybe_unused avoid_kmemleak_false_alarm(struct pci_dev *dev,
+						     void *data)
+{
+	kmemleak_not_leak(dev);
+	kmemleak_not_leak(&dev->dev);
+	return 0;
+}
+
+static void mtk_pcie_avoid_kmemleak_false_alarm(struct pci_host_bridge *host)
+{
+	kmemleak_not_leak(host);
+	kmemleak_not_leak(&host->dev);
+	kmemleak_not_leak(host->bus);
+	kmemleak_not_leak(&host->bus->dev);
+	kmemleak_not_leak(&host->bus->resources);
+
+	pci_walk_bus(host->bus, avoid_kmemleak_false_alarm, NULL);
+}
+
 static int mtk_pcie_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -1359,7 +1378,6 @@ static int mtk_pcie_probe(struct platform_device *pdev)
 	if (!host)
 		return -ENOMEM;
 
-	kmemleak_not_leak(host);
 	port = pci_host_bridge_priv(host);
 
 	port->dev = dev;
@@ -1380,6 +1398,7 @@ static int mtk_pcie_probe(struct platform_device *pdev)
 		goto err_probe;
 	}
 
+	mtk_pcie_avoid_kmemleak_false_alarm(host);
 	port->rc_pdev = pci_get_slot(host->bus, 0);
 
 	return 0;
