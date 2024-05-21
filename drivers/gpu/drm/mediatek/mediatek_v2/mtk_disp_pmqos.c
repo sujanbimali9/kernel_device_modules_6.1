@@ -19,6 +19,8 @@
 #include <dt-bindings/interconnect/mtk,mmqos.h>
 #include <soc/mediatek/mmqos.h>
 #include <soc/mediatek/mmdvfs_v3.h>
+#include "mtk_disp_oddmr/mtk_disp_oddmr.h"
+
 
 #define CRTC_NUM		4
 static struct drm_crtc *dev_crtc;
@@ -243,9 +245,10 @@ static unsigned int mtk_disp_larb_hrt_bw_MT6989(struct mtk_drm_crtc *mtk_crtc,
 	int max_sub_comm = 4; // 6989 sub common num
 	int max_ovl_phy_layer = 12; // 6989 phy ovl layer num
 	unsigned int subcomm_bw_sum[4] = {0};
+	unsigned int oddmr_hrt = 0;
 	/* sub_comm0: layer0 + layer4 + layer9
 	 * sub_comm1: layer1 + layer5 + layer8
-	 * sub_comm2: layer2 + layer7 + layer11
+	 * sub_comm2: layer2 + layer7 + layer11 + dbi
 	 * sub_comm3: layer3 + layer6 + layer10
 	 */
 	for (i = 0; i < max_ovl_phy_layer; i++) {
@@ -260,6 +263,9 @@ static unsigned int mtk_disp_larb_hrt_bw_MT6989(struct mtk_drm_crtc *mtk_crtc,
 				subcomm_bw_sum[3] += bw_base * mtk_crtc->usage_ovl_fmt[i] / 4;
 		}
 	}
+
+	mtk_oddmr_hrt_cal_notify(&oddmr_hrt);
+	subcomm_bw_sum[2] += bw_base * oddmr_hrt / 400;
 
 	return mtk_disp_getMaxBW(subcomm_bw_sum, max_sub_comm, total_bw);
 }
