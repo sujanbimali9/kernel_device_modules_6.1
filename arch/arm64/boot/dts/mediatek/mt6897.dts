@@ -4702,6 +4702,10 @@
 		compatible = "mediatek,mmdvfs-v3-start";
 	};
 
+	ktf-mmdvfs-test {
+		compatible = "mediatek,ktf-mmdvfs-test";
+	};
+
 	mmdvfs {
 		compatible = "mediatek,mmdvfs";
 		dvfsrc-vcore-supply = <&dvfsrc_vcore>;
