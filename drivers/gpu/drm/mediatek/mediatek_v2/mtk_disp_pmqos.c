@@ -875,7 +875,7 @@ void mtk_drm_mmdvfs_init(struct device *dev)
 	}
 
 	/* MMDVFS V2 */
-	DDPINFO("%s, try to use MMDVFS V2\n", __func__);
+	DDPMSG("%s, try to use MMDVFS V2, vdisp_opp:%u, ret:%d\n", __func__, vdisp_opp, ret);
 	mm_freq_request = devm_regulator_get_optional(dev, "mmdvfs-dvfsrc-vcore");
 	if (IS_ERR_OR_NULL(mm_freq_request))
 		DDPPR_ERR("%s, get mmdvfs-dvfsrc-vcore failed\n", __func__);
