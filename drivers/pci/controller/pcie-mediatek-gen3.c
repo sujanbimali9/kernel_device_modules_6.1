@@ -755,7 +755,6 @@ static struct msi_domain_info mtk_msi_domain_info = {
 static void mtk_compose_msi_msg(struct irq_data *data, struct msi_msg *msg)
 {
 	struct mtk_msi_set *msi_set = irq_data_get_irq_chip_data(data);
-	struct mtk_pcie_port *port = data->domain->host_data;
 	unsigned long hwirq;
 
 	hwirq =	data->hwirq % PCIE_MSI_IRQS_PER_SET;
@@ -763,8 +762,6 @@ static void mtk_compose_msi_msg(struct irq_data *data, struct msi_msg *msg)
 	msg->address_hi = upper_32_bits(msi_set->msg_addr);
 	msg->address_lo = lower_32_bits(msi_set->msg_addr);
 	msg->data = hwirq;
-	dev_dbg(port->dev, "msi#%#lx address_hi %#x address_lo %#x data %d\n",
-		hwirq, msg->address_hi, msg->address_lo, msg->data);
 }
 
 static void mtk_msi_bottom_irq_ack(struct irq_data *data)
