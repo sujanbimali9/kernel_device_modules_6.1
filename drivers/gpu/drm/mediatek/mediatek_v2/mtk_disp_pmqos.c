@@ -264,7 +264,7 @@ static unsigned int mtk_disp_larb_hrt_bw_MT6989(struct mtk_drm_crtc *mtk_crtc,
 		}
 	}
 
-	mtk_oddmr_hrt_cal_notify(&oddmr_hrt);
+	mtk_oddmr_hrt_cal(&oddmr_hrt);
 	subcomm_bw_sum[2] += bw_base * oddmr_hrt / 400;
 
 	return mtk_disp_getMaxBW(subcomm_bw_sum, max_sub_comm, total_bw);
