@@ -13769,7 +13769,8 @@ static void mtk_drm_crtc_atomic_begin(struct drm_crtc *crtc,
 	struct cmdq_client *client;
 #endif
 
-	DDP_MUTEX_LOCK(&mtk_crtc->blank_lock, __func__, __LINE__);
+	if (crtc_idx == 0)
+		DDP_MUTEX_LOCK(&mtk_crtc->blank_lock, __func__, __LINE__);
 	if (unlikely(crtc_idx >= MAX_CRTC)) {
 		DDPPR_ERR("%s invalid crtc_idx %u\n", __func__, crtc_idx);
 		return;
@@ -16434,7 +16435,8 @@ end:
 #ifdef DRM_CMDQ_DISABLE
 	trigger_without_cmdq(crtc);
 #endif
-	DDP_MUTEX_UNLOCK(&mtk_crtc->blank_lock, __func__, __LINE__);
+	if (index == 0)
+		DDP_MUTEX_UNLOCK(&mtk_crtc->blank_lock, __func__, __LINE__);
 	CRTC_MMP_EVENT_END((int) index, atomic_flush, (unsigned long)crtc_state,
 			(unsigned long)old_crtc_state);
 	mtk_drm_trace_end("mtk_drm_crtc_atomic:%u-%llu-%llu-%d",
