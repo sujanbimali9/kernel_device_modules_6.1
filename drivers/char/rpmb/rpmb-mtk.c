@@ -1392,6 +1392,9 @@ out:
 static enum mc_result rpmb_gp_execute_ufs(u32 cmdId)
 {
 	int ret;
+	struct rpmb_dev *rpmbdev = NULL;
+	struct device *dev = NULL;
+	struct ufs_hba *hba = NULL;
 
 	switch (cmdId) {
 
@@ -1423,9 +1426,29 @@ static enum mc_result rpmb_gp_execute_ufs(u32 cmdId)
 		MSG(INFO, "%s: DCI_RPMB_CMD_PROGRAM_KEY.\n", __func__);
 		rpmb_dump_frame(rpmb_gp_dci->request.frame);
 
+		rpmbdev = ufs_mtk_rpmb_get_raw_dev();
+		if(rpmbdev == NULL){
+			MSG(ERR, "%s: invalid rpmbdev (NULL).\n", __func__);
+			ret = -1;
+			break;
+		}
+		dev = rpmbdev->dev.parent;
+		if(dev == NULL){
+			MSG(ERR, "%s: invalid dev (NULL).\n", __func__);
+			ret = -1;
+			break;
+		}
+		hba = dev_get_drvdata(dev);
+		if(hba == NULL){
+			MSG(ERR, "%s: invalid hba (NULL).\n", __func__);
+			ret = -1;
+			break;
+		}
 		/* program both region 0 and region 1 key */
-		ret = rpmb_req_program_key_ufs(RPMB_REGION1, rpmb_gp_dci->request.frame,
-			1);
+		if(hba->dev_info.wspecversion >= 0x0300){
+			ret = rpmb_req_program_key_ufs(RPMB_REGION1, rpmb_gp_dci->request.frame,
+				1);
+		}
 		ret = rpmb_req_program_key_ufs(RPMB_REGION0, rpmb_gp_dci->request.frame,
 			1);
 
