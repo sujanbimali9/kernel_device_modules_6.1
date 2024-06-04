@@ -1525,6 +1525,10 @@ int mdrv_DPTx_HPD_HandleInThread(struct mtk_dp *mtk_dp)
 
 			DPTXMSG("Power OFF %d", mtk_dp->bPowerOn);
 			pm_runtime_put_sync(mtk_dp->dev);
+			if (mtk_dp->priv->data->mmsys_id == MMSYS_MT6989) {
+				if (mtk_dp->priv->dpc_dev)
+					pm_runtime_put_sync(mtk_dp->priv->dpc_dev);
+			}
 			if (mtk_dp->info.bPatternGen)
 				mhal_DPTx_VideoClock(false,
 					mtk_dp->info.resolution);
@@ -3994,6 +3998,8 @@ void mtk_dp_fake_plugin(unsigned int status, unsigned int bpc)
 
 void mtk_dp_HPDInterruptSet(int bstatus)
 {
+	int ret;
+
 	if (g_mtk_dp == NULL) {
 		DPTXERR("%s: dp not initial\n", __func__);
 		return;
@@ -4010,6 +4016,16 @@ void mtk_dp_HPDInterruptSet(int bstatus)
 		|| (bstatus == HPD_INT_EVNET && g_mtk_dp->bPowerOn)) {
 
 		if (bstatus == HPD_CONNECT) {
+			if (g_mtk_dp->priv->data->mmsys_id == MMSYS_MT6989) {
+				if (g_mtk_dp->priv->dpc_dev) {
+					/* get mminfra before DPTX on */
+					ret = pm_runtime_resume_and_get(g_mtk_dp->priv->dpc_dev);
+					if (unlikely(ret)) {
+						DPTXMSG("request mminfra power failed\n");
+						return;
+					}
+				}
+			}
 			pm_runtime_get_sync(g_mtk_dp->dev);
 			mdrv_DPTx_InitPort(g_mtk_dp);
 			mhal_DPTx_USBC_HPD(g_mtk_dp, true);
