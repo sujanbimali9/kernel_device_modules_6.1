@@ -1233,7 +1233,7 @@ static struct mtk_panel_params ext_params_90hz = {
 			.range_bpg_ofs = nt37801_wqhs_dsi_cmd_120hz_dphy_range_bpg_ofs,
 			},
 		},
-	.data_rate = 760,
+	.data_rate = PLL_CLOCK * 2,
 	/* following MIPI hopping parameter might cause screen mess */
 #ifdef IF_ZERO
 	.dyn = {
@@ -1244,7 +1244,7 @@ static struct mtk_panel_params ext_params_90hz = {
 	.dyn_fps = {
 		.switch_en = 1,
 		.vact_timing_fps = 90,
-		.data_rate = 760,
+		.data_rate = PLL_CLOCK * 2,
 	},
 	.mode_switch_cmdq = MODE_SWITCH_CMDQ_ENABLE,
 	//.real_te_duration = 8333,
@@ -1312,7 +1312,7 @@ static struct mtk_panel_params ext_params_60hz = {
 			.range_bpg_ofs = nt37801_wqhs_dsi_cmd_120hz_dphy_range_bpg_ofs,
 			},
 		},
-	.data_rate = 500,
+	.data_rate = PLL_CLOCK * 2,
 	/* following MIPI hopping parameter might cause screen mess */
 #ifdef IF_ZERO
 	.dyn = {
@@ -1323,7 +1323,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	.dyn_fps = {
 		.switch_en = 1,
 		.vact_timing_fps = 60,
-		.data_rate = 500,
+		.data_rate = PLL_CLOCK * 2,
 	},
 	.mode_switch_cmdq = MODE_SWITCH_CMDQ_ENABLE,
 	//.real_te_duration = 8333,
@@ -1390,7 +1390,7 @@ static struct mtk_panel_params ext_params_30hz = {
 			.range_bpg_ofs = nt37801_wqhs_dsi_cmd_120hz_dphy_range_bpg_ofs,
 			},
 		},
-	.data_rate = 500,
+	.data_rate = PLL_CLOCK * 2,
 	/* following MIPI hopping parameter might cause screen mess */
 #ifdef IF_ZERO
 	.dyn = {
@@ -1401,7 +1401,7 @@ static struct mtk_panel_params ext_params_30hz = {
 	.dyn_fps = {
 		.switch_en = 1,
 		.vact_timing_fps = 30,
-		.data_rate = 500,
+		.data_rate = PLL_CLOCK * 2,
 	},
 	.mode_switch_cmdq = MODE_SWITCH_CMDQ_ENABLE,
 	//.real_te_duration = 8333,
