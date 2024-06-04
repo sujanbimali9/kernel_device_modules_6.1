@@ -1173,7 +1173,7 @@ static int mtk_mmqos_set(struct icc_node *src, struct icc_node *dst)
 	struct common_node *comm_node;
 	struct mtk_mmqos *mmqos = container_of(dst->provider,
 					struct mtk_mmqos, prov);
-	u32 value = 1, record_idx = -1;
+	u32 value = 1, record_idx = 0;
 	u32 comm_id, chnn_id, port_id, trace_comm_id, trace_chnn_id;
 	const char *r_w_type = "w";
 
