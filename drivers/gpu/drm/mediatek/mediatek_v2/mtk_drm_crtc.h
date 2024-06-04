@@ -896,6 +896,8 @@ struct pq_common_data {
 	atomic_t wake_ref;
 	struct wakeup_source *wake_lock;
 	char *wake_lock_name;
+	wait_queue_head_t cfg_done_wq;
+	atomic_t cfg_done;
 };
 
 struct mtk_vblank_config_rec {

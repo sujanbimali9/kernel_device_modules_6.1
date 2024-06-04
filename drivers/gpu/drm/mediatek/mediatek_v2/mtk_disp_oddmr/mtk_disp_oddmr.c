@@ -3889,10 +3889,8 @@ int mtk_oddmr_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 
 		data->larb_id = -1;
 		data->larb_bw = 0;
-		if (!comp || !mtk_drm_helper_get_opt(priv->helper_opt,
-				MTK_DRM_OPT_MMQOS_SUPPORT) ||
-			!mtk_drm_helper_get_opt(priv->helper_opt,
-				MTK_DRM_OPT_LAYERING_RULE_BY_LARB))
+		if (!mtk_drm_helper_get_opt(priv->helper_opt, MTK_DRM_OPT_MMQOS_SUPPORT) ||
+			!mtk_drm_helper_get_opt(priv->helper_opt, MTK_DRM_OPT_LAYERING_RULE_BY_LARB))
 			break;
 
 		if (comp->larb_num == 1)

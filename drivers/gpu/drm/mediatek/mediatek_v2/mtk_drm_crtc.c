@@ -17501,6 +17501,8 @@ static void mtk_pq_data_init(struct mtk_drm_crtc *mtk_crtc)
 	init_waitqueue_head(&pq_data->pq_hw_relay_cb_wq);
 	mutex_init(&pq_data->wake_mutex);
 	atomic_set(&pq_data->wake_ref, 0);
+	init_waitqueue_head(&pq_data->cfg_done_wq);
+	atomic_set(&pq_data->cfg_done, 1);
 	/* init wakelock resources */
 	{
 		unsigned int len = 21;
