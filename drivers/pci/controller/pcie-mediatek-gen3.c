@@ -1352,7 +1352,6 @@ static int __maybe_unused avoid_kmemleak_false_alarm(struct pci_dev *dev,
 						     void *data)
 {
 	kmemleak_not_leak(dev);
-	kmemleak_not_leak(&dev->dev);
 	return 0;
 }
 
@@ -1363,7 +1362,6 @@ static void mtk_pcie_avoid_kmemleak_false_alarm(struct pci_host_bridge *host)
 	kmemleak_not_leak(host);
 	kmemleak_not_leak(&host->dev);
 	kmemleak_not_leak(host->bus);
-	kmemleak_not_leak(&host->bus->dev);
 
 	list_for_each_entry(bus_res, &host->bus->resources, list)
 		kmemleak_not_leak(bus_res);
