@@ -2005,6 +2005,12 @@ static void mtk_dsi_tx_buf_rw(struct mtk_dsi *dsi)
 			buf_con = 2426;
 		else
 			DDPMSG("%s, %d, unknown id:%d\n", __func__, __LINE__, comp->id);
+	} else if (!IS_ERR_OR_NULL(priv) && !IS_ERR_OR_NULL(priv->data)
+		&& priv->data->mmsys_id == MMSYS_MT6878) {
+		if ((comp->id == DDP_COMPONENT_DSI0) || (comp->id == DDP_COMPONENT_DSI1))
+			buf_con = 1554;
+		else
+			DDPMSG("%s, %d, unknown id:%d\n", __func__, __LINE__, comp->id);
 	}
 
 	if (mtk_crtc_is_frame_trigger_mode(&mtk_crtc->base)) {
