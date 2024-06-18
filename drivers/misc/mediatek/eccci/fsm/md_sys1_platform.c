@@ -408,6 +408,11 @@ static void md_gpio_driving_dump(void)
  */
 static void md_source_info_dump(void)
 {
+	if (in_interrupt()) {
+		CCCI_MEM_LOG_TAG(0, TAG, "In interrupt, skip dump md source info.\n");
+		return;
+	}
+
 	/*step1. md hw status only 6989 need */
 	if (ap_plat_info == 6989)
 		md_hw_status_dump();
