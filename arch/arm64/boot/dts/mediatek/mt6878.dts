@@ -5819,7 +5819,7 @@
 				<0>, /*MTK_DRM_OPT_VIDLE_VDO_PANEL*/
 				<0>, /*MTK_DRM_OPT_VIDLE_HOME_SCREEN_IDLE*/
 				<0>, /*MTK_DRM_OPT_DPC_PRE_TE_EN*/
-				<1>; /*"MTK_DRM_OPT_PER_LARB_PORT_PEAK"*/
+				<0>; /*"MTK_DRM_OPT_PER_LARB_PORT_PEAK"*/
 		};
 
 		disp_mutex0: disp-mutex0@14001000 {
