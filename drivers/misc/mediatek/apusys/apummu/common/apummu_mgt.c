@@ -22,18 +22,6 @@
 
 extern struct apummu_dev_info *g_adv;
 
-struct apummu_tbl {
-	struct list_head g_stable_head;
-	struct kref session_tbl_cnt;
-	struct mutex table_lock;
-	struct mutex DRAM_FB_lock;
-	bool is_stable_exist;
-	bool is_SLB_set;
-	bool is_work_canceled;
-	bool is_free_job_set;
-	bool is_SLB_alloc; // Since SLB state might not sync with APU
-};
-
 struct apummu_tbl g_ammu_table_set;
 struct apummu_session_tbl *g_ammu_stable_ptr; // stable stand for session table
 
