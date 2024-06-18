@@ -43,6 +43,8 @@ int debug_mmp;
 module_param(debug_mmp, int, 0644);
 int debug_dvfs;
 module_param(debug_dvfs, int, 0644);
+int debug_dvfs_vdisp;
+module_param(debug_dvfs_vdisp, int, 0644);
 int debug_check_reg;
 module_param(debug_check_reg, int, 0644);
 int debug_check_rtff;
@@ -2322,14 +2324,18 @@ static int vdisp_level_set_vcp(const enum mtk_dpc_subsys subsys, const u8 level,
 		g_vdisp_level_disp = level;
 		if (MEM_BASE) /* add vdisp info to met */
 			writel(4 - level, MEM_USR_OPP(VCP_PWR_USR_DISP));
+		dpc_mmp(vdisp_disp, MMPROFILE_FLAG_PULSE, (level << 16) | addr,
+			readl(dpc_base + addr));
 	} else if (MTK_DPC_OF_MML_SUBSYS(subsys)) {
 		g_vdisp_level_mml = level;
 		if (MEM_BASE) /* add vdisp info to met */
 			writel(4 - level, MEM_USR_OPP(VCP_PWR_USR_MML));
+		dpc_mmp(vdisp_mml, MMPROFILE_FLAG_PULSE, (level << 16) | addr,
+			readl(dpc_base + addr));
 	}
 
-	if (unlikely(debug_dvfs))
-		DPCFUNC("subsys:%d, disp reg:0x%lx=0x%x, mml reg:0x%lx=0x%x, vdisp_level:%u/%u, ret:%d, cnt:%u",
+	if (unlikely(debug_dvfs_vdisp))
+		DPCFUNC("subsys:%d,disp:0x%lx=0x%x,mml:0x%lx=0x%x,vdisp:%u/%u,ret:%d,cnt:%u",
 			subsys, DISP_REG_DPC_DISP_VDISP_DVFS_VAL,
 			readl(dpc_base + DISP_REG_DPC_DISP_VDISP_DVFS_VAL),
 			DISP_REG_DPC_MML_VDISP_DVFS_VAL,
@@ -2344,19 +2350,32 @@ static int vdisp_level_set_vcp(const enum mtk_dpc_subsys subsys, const u8 level,
 static u8 dpc_max_dvfs_level(const enum mtk_dpc_subsys subsys)
 {
 	u8 max_level = 0;
+	u32 addr;
 
 	if (MTK_DPC_OF_DISP_SUBSYS(subsys)) {
 		/* update channel bw and disp level by disp vote */
+		addr = DISP_REG_DPC_DISP_VDISP_DVFS_VAL;
+
 		max_level = g_priv->dvfs_bw.disp_level > g_priv->dvfs_bw.bw_level?
 			g_priv->dvfs_bw.disp_level : g_priv->dvfs_bw.bw_level;
-		if (g_vdisp_level_disp == max_level)
+		if (readl(dpc_base + addr) == max_level)
 			max_level = DPC_VDISP_LEVEL_IGNORE;
+
+		if (unlikely(debug_dvfs_vdisp) && g_vdisp_level_disp != readl(dpc_base + addr))
+			DPCERR("subsys:%d, level:%u, reg:0x%x=0x%x",
+				subsys, g_vdisp_level_disp, addr, readl(dpc_base + addr));
 	} else if (MTK_DPC_OF_MML_SUBSYS(subsys)) {
+		addr = DISP_REG_DPC_MML_VDISP_DVFS_VAL;
+
 		/* only update mml level by mml vote */
-		if (g_vdisp_level_mml == g_priv->dvfs_bw.mml_level)
+		if (readl(dpc_base + addr) == g_priv->dvfs_bw.mml_level)
 			max_level = DPC_VDISP_LEVEL_IGNORE;
 		else
 			max_level = g_priv->dvfs_bw.mml_level;
+
+		if (unlikely(debug_dvfs_vdisp) && g_vdisp_level_mml != readl(dpc_base + addr))
+			DPCERR("subsys:%d, level:%u, reg:0x%x=0x%x",
+				subsys, g_vdisp_level_mml, addr, readl(dpc_base + addr));
 	} else {
 		DPCERR("invalid user:%d", subsys);
 		WARN_ON(1);
@@ -2437,18 +2456,23 @@ void dpc_dvfs_set(const enum mtk_dpc_subsys subsys, const u8 level, bool force)
 		avail = mtk_dpc_support_cap(DPC_VIDLE_LOWER_VDISP_DVFS);
 		writel((force || !avail)? 1 : 0, dpc_base + addr);
 		spin_unlock_irqrestore(&dpc_lock, flags);
-		if (unlikely(debug_dvfs))
-			DPCFUNC("subsys:%d ignore subl:%u->%u,max:%u[disp:%u,mml:%u,bw:%u(%u,%u)],f:%u",
+		if (unlikely(debug_dvfs_vdisp))
+			DPCFUNC(
+				"subsys:%d ignore subl:%u->%u,max:%u[%u,%u,%u(%u,%u)],f:%u,reg[0x%x,0x%x]",
 				subsys, last_level, level, max_level,
 				g_priv->dvfs_bw.disp_level, g_priv->dvfs_bw.mml_level,
-				g_priv->dvfs_bw.bw_level, g_priv->dvfs_bw.disp_bw, g_priv->dvfs_bw.mml_bw, force);
+				g_priv->dvfs_bw.bw_level, g_priv->dvfs_bw.disp_bw,
+				g_priv->dvfs_bw.mml_bw, force,
+				readl(dpc_base + DISP_REG_DPC_DISP_VDISP_DVFS_VAL),
+				readl(dpc_base + DISP_REG_DPC_MML_VDISP_DVFS_VAL));
 		goto out;
 	}
-	if (unlikely(debug_dvfs))
-		DPCFUNC("subsys:%d update subl:%u->%u,max:%u/%u->%u[disp:%u,mml:%u,bw:%u(%u,%u)],f:%u",
-			subsys, last_level, level, g_vdisp_level_disp, g_vdisp_level_mml, max_level,
-			g_priv->dvfs_bw.disp_level, g_priv->dvfs_bw.mml_level,
-			g_priv->dvfs_bw.bw_level, g_priv->dvfs_bw.disp_bw, g_priv->dvfs_bw.mml_bw, force);
+	if (unlikely(debug_dvfs_vdisp))
+		DPCFUNC("subsys:%d update subl:%u->%u,max:%u/%u->%u[%u,%u,%u(%u,%u)],f:%u",
+			subsys, last_level, level, g_vdisp_level_disp, g_vdisp_level_mml,
+			max_level, g_priv->dvfs_bw.disp_level, g_priv->dvfs_bw.mml_level,
+			g_priv->dvfs_bw.bw_level, g_priv->dvfs_bw.disp_bw,
+			g_priv->dvfs_bw.mml_bw, force);
 
 	if (mtk_mmdvfs_enable_vcp(true, mmdvfs_user) < 0)
 		mmdvfs_state = false;
@@ -2508,16 +2532,18 @@ void dpc_dvfs_bw_set(const enum mtk_dpc_subsys subsys, const u32 bw_in_mb)
 
 	max_bw_level = dpc_max_dvfs_level(DPC_SUBSYS_VDISP_LEVEL_OF_BW);
 	if (max_bw_level == DPC_VDISP_LEVEL_IGNORE) {
-		if (unlikely(debug_dvfs))
-			DPCFUNC("subsys:%d ignore bwl:%u->%u,max:%u[disp:%u,mml:%u,bw:%u(%u,%u)]",
+		if (unlikely(debug_dvfs_vdisp))
+			DPCFUNC("subsys:%d ignore bwl:%u->%u,max:%u[%u,%u,%u(%u,%u)],reg[0x%x,0x%x]",
 				subsys, last_bw_level, g_priv->dvfs_bw.bw_level, max_bw_level,
 				g_priv->dvfs_bw.disp_level, g_priv->dvfs_bw.mml_level,
 				g_priv->dvfs_bw.bw_level, g_priv->dvfs_bw.disp_bw,
-				g_priv->dvfs_bw.mml_bw);
+				g_priv->dvfs_bw.mml_bw,
+				readl(dpc_base + DISP_REG_DPC_DISP_VDISP_DVFS_VAL),
+				readl(dpc_base + DISP_REG_DPC_MML_VDISP_DVFS_VAL));
 		goto out;
 	}
-	if (unlikely(debug_dvfs))
-		DPCFUNC("subsys:%d update bwl:%u->%u,max:%u/%u->%u[disp:%u,mml:%u,bw:%u(%u,%u)]",
+	if (unlikely(debug_dvfs_vdisp))
+		DPCFUNC("subsys:%d update bwl:%u->%u,max:%u/%u->%u[%u,%u,%u(%u,%u)]",
 			subsys, last_bw_level, g_priv->dvfs_bw.bw_level,
 			g_vdisp_level_disp, g_vdisp_level_mml, max_bw_level,
 			g_priv->dvfs_bw.disp_level, g_priv->dvfs_bw.mml_level,
@@ -2606,17 +2632,20 @@ void dpc_dvfs_both_set(const enum mtk_dpc_subsys subsys, const u8 level, bool fo
 		writel((force || !avail) ? 1 : 0, dpc_base + addr);
 		spin_unlock_irqrestore(&dpc_lock, flags);
 
-		if (unlikely(debug_dvfs))
-			DPCFUNC("subsys:%d ignore bwl:%u->%u,subl:%u->%u,max:%u/%u[disp:%u,mml:%u,bw:%u(%u,%u)],f:%u",
+		if (unlikely(debug_dvfs_vdisp))
+			DPCFUNC(
+				"subsys:%d ignore bwl:%u->%u,subl:%u->%u,max:%u/%u[%u,%u,%u(%u,%u)],f:%u,reg[0x%x,0x%x]",
 				subsys, last_bw_level, g_priv->dvfs_bw.bw_level,
 				last_level, level, max_level_subsys, max_level_bw,
 				g_priv->dvfs_bw.disp_level, g_priv->dvfs_bw.mml_level,
 				g_priv->dvfs_bw.bw_level, g_priv->dvfs_bw.disp_bw,
-				g_priv->dvfs_bw.mml_bw, force);
+				g_priv->dvfs_bw.mml_bw, force,
+				readl(dpc_base + DISP_REG_DPC_DISP_VDISP_DVFS_VAL),
+				readl(dpc_base + DISP_REG_DPC_MML_VDISP_DVFS_VAL));
 		goto out;
 	}
-	if (unlikely(debug_dvfs))
-		DPCFUNC("subsys:%d update bwl:%u->%u,subl:%u->%u,max:%u/%u->%u/%u,[disp:%u,mml:%u,bw:%u(%u,%u)],f:%u",
+	if (unlikely(debug_dvfs_vdisp))
+		DPCFUNC("subsys:%d update bwl:%u->%u,subl:%u->%u,max:%u/%u->%u/%u,[%u,%u,%u(%u,%u)],f:%u",
 			subsys, last_bw_level, g_priv->dvfs_bw.bw_level, last_level, level,
 			g_vdisp_level_disp, g_vdisp_level_mml, max_level_bw, max_level_subsys,
 			g_priv->dvfs_bw.disp_level, g_priv->dvfs_bw.mml_level,
@@ -2891,6 +2920,13 @@ void dpc_config(const enum mtk_dpc_subsys subsys, bool en)
 out:
 	spin_unlock_irqrestore(&dpc_lock, flags);
 	dpc_pm_ctrl(false);
+	if (unlikely(debug_dvfs_vdisp))
+		DPCFUNC("vdisp status[%u,%u,%u(%u,%u)],reg:[0x%x,0x%x]",
+			g_priv->dvfs_bw.disp_level, g_priv->dvfs_bw.mml_level,
+			g_priv->dvfs_bw.bw_level, g_priv->dvfs_bw.disp_bw,
+			g_priv->dvfs_bw.mml_bw,
+			readl(dpc_base + DISP_REG_DPC_DISP_VDISP_DVFS_VAL),
+			readl(dpc_base + DISP_REG_DPC_MML_VDISP_DVFS_VAL));
 }
 EXPORT_SYMBOL(dpc_config);
 
