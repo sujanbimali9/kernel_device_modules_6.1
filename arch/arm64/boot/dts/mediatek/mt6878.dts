@@ -2976,6 +2976,7 @@
 	smi-test {
 		compatible = "mediatek,smi-testcase";
 		mediatek,larbs = <&smi_larb2>;
+		skip-set-common-bw;
 	};
 
 	smi_larb2: smi-larb2@1f002000 {
