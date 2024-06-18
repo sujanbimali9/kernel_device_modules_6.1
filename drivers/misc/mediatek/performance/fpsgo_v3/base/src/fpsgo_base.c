@@ -23,6 +23,7 @@
 #include <linux/miscdevice.h>
 #include <linux/uaccess.h>
 #include <linux/wait.h>
+#include <linux/kmemleak.h>
 
 #include "mt-plat/fpsgo_common.h"
 #include "fpsgo_usedext.h"
@@ -1124,6 +1125,8 @@ struct render_info *fpsgo_search_and_add_render_info(int pid,
 	iter_thr->master_type = local_master_type;
 
 	fbt_set_render_boost_attr(iter_thr);
+
+	kmemleak_not_leak(iter_thr);
 
 	rb_link_node(&iter_thr->render_key_node, parent, p);
 	rb_insert_color(&iter_thr->render_key_node, &render_pid_tree);
