@@ -2576,7 +2576,7 @@ void dpc_dvfs_both_set(const enum mtk_dpc_subsys subsys, const u8 level, bool fo
 {
 	u32 addr = 0, avail = 0, total_bw = 0;
 	u32 mmdvfs_user = U32_MAX;
-	u8 max_level, max_level_subsys, max_level_bw;
+	u8 max_level = 0, max_level_subsys = 0, max_level_bw = 0;
 	u8 last_bw_level, last_level;
 	unsigned long flags = 0;
 	bool mmdvfs_state = true;
