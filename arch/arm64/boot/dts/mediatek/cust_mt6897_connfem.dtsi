@@ -7,7 +7,8 @@
 	/* PINCTRL States*/
 	pinctrl-names = "wlan7207h-wlan7207c",		/* pinctrl-0 */
 			"qm42195-qm45197",		/* pinctrl-1 */
-			"nofem-sky85732";		/* pinctrl-2 */
+			"nofem-sky85732",		/* pinctrl-2 */
+			"qm42195-nofem";		/* pinctrl-3 */
 
 	pinctrl-0 = <&wlan7207h_wf0>, <&wlan7207h_wf1>,
 		<&wlan7207c_wf0>, <&wlan7207c_wf1>;
@@ -16,6 +17,8 @@
 		<&qm45197_wf0>, <&qm45197_wf1>;
 
 	pinctrl-2 = <&sky85732_wf0>, <&sky85732_wf1>;
+
+	pinctrl-3 = <&qm42195_wf0>, <&qm42195_wf1>;
 
 	/* FEM ID */
 	nofem: nofem {
