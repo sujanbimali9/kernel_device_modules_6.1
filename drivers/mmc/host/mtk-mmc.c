@@ -60,7 +60,10 @@ static const struct mtk_mmc_compatible mt8135_compat = {
 	},
 	.enhance_rx = false,
 	.support_64g = false,
-	.need_gate_cg = true,
+	.clock_set = {
+		.need_gate_cg = true,
+		.set_type = MSDC_CLK_SET_V1,
+	},
 	.new_tx_ver = 0,
 	.new_rx_ver = 0,
 	.infra_check = {
@@ -82,7 +85,10 @@ static const struct mtk_mmc_compatible mt8173_compat = {
 	},
 	.enhance_rx = false,
 	.support_64g = false,
-	.need_gate_cg = true,
+	.clock_set = {
+		.need_gate_cg = true,
+		.set_type = MSDC_CLK_SET_V1,
+	},
 	.new_tx_ver = 0,
 	.new_rx_ver = 0,
 	.infra_check = {
@@ -106,7 +112,10 @@ static const struct mtk_mmc_compatible mt8183_compat = {
 	},
 	.enhance_rx = true,
 	.support_64g = true,
-	.need_gate_cg = true,
+	.clock_set = {
+		.need_gate_cg = true,
+		.set_type = MSDC_CLK_SET_V1,
+	},
 	.new_tx_ver = 0,
 	.new_rx_ver = 0,
 	.infra_check = {
@@ -151,7 +160,10 @@ static const struct mtk_mmc_compatible mt2701_compat = {
 	},
 	.enhance_rx = false,
 	.support_64g = false,
-	.need_gate_cg = true,
+	.clock_set = {
+		.need_gate_cg = true,
+		.set_type = MSDC_CLK_SET_V1,
+	},
 	.new_tx_ver = 0,
 	.new_rx_ver = 0,
 	.infra_check = {
@@ -175,7 +187,10 @@ static const struct mtk_mmc_compatible mt2712_compat = {
 	},
 	.enhance_rx = true,
 	.support_64g = true,
-	.need_gate_cg = true,
+	.clock_set = {
+		.need_gate_cg = true,
+		.set_type = MSDC_CLK_SET_V1,
+	},
 	.new_tx_ver = 0,
 	.new_rx_ver = 0,
 	.infra_check = {
@@ -199,7 +214,10 @@ static const struct mtk_mmc_compatible mt7622_compat = {
 	},
 	.enhance_rx = true,
 	.support_64g = false,
-	.need_gate_cg = true,
+	.clock_set = {
+		.need_gate_cg = true,
+		.set_type = MSDC_CLK_SET_V1,
+	},
 	.new_tx_ver = 0,
 	.new_rx_ver = 0,
 	.infra_check = {
@@ -221,7 +239,10 @@ static const struct mtk_mmc_compatible mt8516_compat = {
 		.stop_cnt = 3,
 		.pop_cnt = 8,
 	},
-	.need_gate_cg = true,
+	.clock_set = {
+		.need_gate_cg = true,
+		.set_type = MSDC_CLK_SET_V1,
+	},
 	.new_tx_ver = 0,
 	.new_rx_ver = 0,
 	.infra_check = {
@@ -243,7 +264,10 @@ static const struct mtk_mmc_compatible mt7620_compat = {
 	},
 	.enhance_rx = false,
 	.use_internal_cd = true,
-	.need_gate_cg = true,
+	.clock_set = {
+		.need_gate_cg = true,
+		.set_type = MSDC_CLK_SET_V1,
+	},
 	.new_tx_ver = 0,
 	.new_rx_ver = 0,
 	.infra_check = {
@@ -267,7 +291,10 @@ static const struct mtk_mmc_compatible mt6779_compat = {
 	},
 	.enhance_rx = true,
 	.support_64g = true,
-	.need_gate_cg = true,
+	.clock_set = {
+		.need_gate_cg = true,
+		.set_type = MSDC_CLK_SET_V1,
+	},
 	.new_tx_ver = 0,
 	.new_rx_ver = 0,
 	.infra_check = {
@@ -291,7 +318,9 @@ static const struct mtk_mmc_compatible common_v2_compat = {
 	},
 	.enhance_rx = true,
 	.support_64g = true,
-	.need_gate_cg = false,
+	.clock_set = {
+		.need_gate_cg = false,
+	},
 	.new_tx_ver = 0,
 	.new_rx_ver = 0,
 	.infra_check = {
@@ -315,7 +344,9 @@ static const struct mtk_mmc_compatible mt6985_compat = {
 	},
 	.enhance_rx = true,
 	.support_64g = true,
-	.need_gate_cg = false,
+	.clock_set = {
+		.need_gate_cg = false,
+	},
 	.new_tx_ver = MSDC_NEW_TX_V1,
 	.new_rx_ver = 0,
 	.infra_check = {
@@ -339,7 +370,9 @@ static const struct mtk_mmc_compatible mt6886_compat = {
 	},
 	.enhance_rx = true,
 	.support_64g = true,
-	.need_gate_cg = false,
+	.clock_set = {
+		.need_gate_cg = false,
+	},
 	.new_tx_ver = MSDC_NEW_TX_V1,
 	.new_rx_ver = 0,
 	.infra_check = {
@@ -363,7 +396,9 @@ static const struct mtk_mmc_compatible mt6897_compat = {
 	},
 	.enhance_rx = true,
 	.support_64g = true,
-	.need_gate_cg = false,
+	.clock_set = {
+		.need_gate_cg = false,
+	},
 	.new_tx_ver = MSDC_NEW_TX_V1,
 	.new_rx_ver = MSDC_NEW_RX_V1,
 	.infra_check = {
@@ -387,7 +422,10 @@ static const struct mtk_mmc_compatible mt6989_compat = {
 	},
 	.enhance_rx = true,
 	.support_64g = true,
-	.need_gate_cg = false,
+	.clock_set = {
+		.need_gate_cg = true,
+		.set_type = MSDC_CLK_SET_V2,
+	},
 	.new_tx_ver = MSDC_NEW_TX_V1,
 	.new_rx_ver = MSDC_NEW_RX_V1,
 	.infra_check = {
@@ -413,7 +451,9 @@ static const struct mtk_mmc_compatible mt6878_compat = {
 	},
 	.enhance_rx = true,
 	.support_64g = true,
-	.need_gate_cg = false,
+	.clock_set = {
+		.need_gate_cg = false,
+	},
 	.new_tx_ver = MSDC_NEW_TX_V2,
 	.new_rx_ver = MSDC_NEW_RX_V1,
 	.infra_check = {
@@ -791,6 +831,54 @@ static void msdc_new_tx_rx_setting(struct msdc_host *host, unsigned char timing)
 	}
 }
 
+static int msdc_prepare_set_mclk(struct msdc_host *host, bool gate)
+{
+	int ret = 0;
+#if !IS_ENABLED(CONFIG_FPGA_EARLY_PORTING)
+	if (host->dev_comp->clock_set.need_gate_cg == false)
+		return 0;
+
+	if (host->dev_comp->clock_set.need_gate_cg &&
+		!support_clk_set(host->dev_comp->clock_set.set_type))
+		return 1;
+
+	switch (host->dev_comp->clock_set.set_type) {
+	case MSDC_CLK_SET_V1:
+		if (gate) {
+			/*
+			 * As src_clk/HCLK use the same bit to gate/ungate,
+			 * So if want to only gate src_clk, need gate its parent(mux).
+			 */
+			if (host->src_clk_cg)
+				clk_disable_unprepare(host->src_clk_cg);
+			else
+				clk_disable_unprepare(clk_get_parent(host->src_clk));
+		} else {
+			if (host->src_clk_cg)
+				ret = clk_prepare_enable(host->src_clk_cg);
+			else
+				ret = clk_prepare_enable(clk_get_parent(host->src_clk));
+		}
+		break;
+	case MSDC_CLK_SET_V2:
+		/* Due to bus protect, gate/ungate mux replace cg */
+		if (gate) {
+			clk_disable_unprepare(host->src_clk);
+			if (host->src_clk_cg)
+				clk_disable_unprepare(host->src_clk);
+		} else {
+			ret = clk_prepare_enable(host->src_clk);
+			if (host->src_clk_cg && ret == 0)
+				ret = clk_prepare_enable(host->src_clk);
+		}
+		break;
+	default:
+		break;
+	}
+#endif
+	return ret;
+}
+
 static void msdc_set_mclk(struct msdc_host *host, unsigned char timing, u32 hz)
 {
 	struct mmc_host *mmc = mmc_from_priv(host);
@@ -800,7 +888,7 @@ static void msdc_set_mclk(struct msdc_host *host, unsigned char timing, u32 hz)
 	u32 sclk;
 	u32 tune_reg = host->dev_comp->pad_tune_reg;
 	u32 val;
-	int timing_changed = 0;
+	int timing_changed = 0, ret;
 
 	if (!hz) {
 		dev_dbg(host->dev, "set mclk to 0\n");
@@ -864,17 +952,10 @@ static void msdc_set_mclk(struct msdc_host *host, unsigned char timing, u32 hz)
 		}
 	}
 	sdr_clr_bits(host->base + MSDC_CFG, MSDC_CFG_CKPDN);
-	/*
-	 * As src_clk/HCLK use the same bit to gate/ungate,
-	 * So if want to only gate src_clk, need gate its parent(mux).
-	 */
 
-	if (host->dev_comp->need_gate_cg) {
-		if (host->src_clk_cg)
-			clk_disable_unprepare(host->src_clk_cg);
-		else
-			clk_disable_unprepare(clk_get_parent(host->src_clk));
-	}
+	ret = msdc_prepare_set_mclk(host, true);
+	if (ret)
+		dev_info(host->dev, "[gate] msdc prepare set clk err: %d\n", ret);
 	if (host->dev_comp->clk_div_bits == 8)
 		sdr_set_field(host->base + MSDC_CFG,
 			      MSDC_CFG_CKMOD | MSDC_CFG_CKDIV,
@@ -884,13 +965,9 @@ static void msdc_set_mclk(struct msdc_host *host, unsigned char timing, u32 hz)
 			      MSDC_CFG_CKMOD_EXTRA | MSDC_CFG_CKDIV_EXTRA,
 			      (mode << 12) | div);
 
-	if (host->dev_comp->need_gate_cg) {
-		if (host->src_clk_cg)
-			clk_prepare_enable(host->src_clk_cg);
-		else
-			clk_prepare_enable(clk_get_parent(host->src_clk));
-	}
-
+	ret = msdc_prepare_set_mclk(host, false);
+	if (ret)
+		dev_info(host->dev, "[ungate] msdc prepare set clk err: %d\n", ret);
 	readl_poll_timeout(host->base + MSDC_CFG, val, (val & MSDC_CFG_CKSTB), 0, 0);
 	if (host->mclk == 0 && (mmc->caps2 & MMC_CAP2_NO_MMC)
 		&& mmc->ios.signal_voltage == MMC_SIGNAL_VOLTAGE_180) {
@@ -2138,7 +2215,7 @@ static inline void msdc_set_cmd_delay(struct msdc_host *host, u32 value)
 		sdr_set_field(host->top_base + EMMC_TOP_CMD, PAD_CMD_RXDLY, pad_dly1);
 		sdr_set_field(host->top_base + EMMC_TOP_CMD, PAD_CMD_RXDLY2, pad_dly2);
 		sdr_set_field(host->top_base + EMMC_TOP_CMD, PAD_CMD_RD_RXDLY_SEL, dly1_sel);
-		sdr_set_field(host->top_base + EMMC_TOP_CMD, PAD_DAT_RD_RXDLY2_SEL, dly2_sel);
+		sdr_set_field(host->top_base + EMMC_TOP_CMD, PAD_CMD_RD_RXDLY2_SEL, dly2_sel);
 	} else {
 		sdr_set_field(host->base + MSDC_PAD_TUNE0, MSDC_PAD_TUNE_CMDRDLY, pad_dly1);
 		sdr_set_field(host->base + MSDC_PAD_TUNE1, MSDC_PAD_TUNE_CMDRDLY, pad_dly2);
@@ -3446,7 +3523,6 @@ static int msdc_drv_probe(struct platform_device *pdev)
 		mmc->max_seg_size = BDMA_DESC_BUFLEN_EXT;
 	else
 		mmc->max_seg_size = BDMA_DESC_BUFLEN;
-	mmc->max_blk_size = 2048;
 	mmc->max_req_size = 512 * 1024;
 	mmc->max_blk_count = mmc->max_req_size / 512;
 	if (host->dev_comp->support_64g)
