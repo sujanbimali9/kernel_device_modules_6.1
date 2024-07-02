@@ -2236,9 +2236,11 @@ static void mtk_drm_idlemgr_wb_cmdq_cb(struct cmdq_cb_data data)
 	DDPINFO("after enter IDLEMGR_BY_WB_TRACE:0x%x\n", *trace);
 
 	if (*trace & BIT(4)) {
+		DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
 		bw_base = mtk_drm_primary_frame_bw(crtc);
 		mtk_disp_set_hrt_bw(mtk_crtc, bw_base);
 		mtk_crtc->qos_ctx->last_hrt_req = bw_base;
+		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 	}
 
 	cmdq_pkt_destroy(cb_data->cmdq_handle);
