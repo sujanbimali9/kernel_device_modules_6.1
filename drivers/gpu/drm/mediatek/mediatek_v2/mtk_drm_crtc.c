@@ -14775,6 +14775,7 @@ static void mtk_crtc_dl_config_color_matrix(struct drm_crtc *crtc,
 	int set = -1;
 	int i;
 	struct mtk_ddp_comp *comp;
+	struct mtk_disp_ccorr *ccorr_data;
 
 	DDPINFO("%s +\n", __func__);
 
@@ -14790,6 +14791,17 @@ static void mtk_crtc_dl_config_color_matrix(struct drm_crtc *crtc,
 					mtk_crtc->ccorr_config_backup.linear);
 			if (set != 0)
 				continue;
+			if (mtk_crtc->is_dual_pipe) {
+				ccorr_data = comp_to_ccorr(comp);
+				set = disp_ccorr_set_color_matrix(ccorr_data->companion,
+					cmdq_handle,
+					mtk_crtc->ccorr_config_backup.color_matrix,
+					mtk_crtc->ccorr_config_backup.mode,
+					mtk_crtc->ccorr_config_backup.featureFlag,
+					mtk_crtc->ccorr_config_backup.linear);
+			}
+			if (!set)
+				break;
 		}
 	}
 
