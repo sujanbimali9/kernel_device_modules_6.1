@@ -11,7 +11,8 @@
 			<&qm42195 &qm45197>,		/* [4]Qorvo eFEM - Closed-Loop+BT Bypass */
 			<&nofem &sky85732>,		/* [5]Skyworks eFEM - Closed-Loop */
 			<&nofem &sky85732>,		/* [6]Skyworks eFEM - Closed-Loop+BT Bypass */
-			<&qm42195 &nofem>;		/* [7]Qorvo eFEM - Closed-Loop */
+			<&qm42195 &nofem>,		/* [7]Qorvo eFEM - Closed-Loop */
+			<&vc536411 &nofem>;		/* [8]Vanchip eFEM - Closed-Loop */
 
 		wifi {
 			flags-1 {
@@ -33,6 +34,9 @@
 				/* open-loop; */
 			};
 			flags-7 {
+				/* open-loop; */
+			};
+			flags-8 {
 				/* open-loop; */
 			};
 		};
@@ -62,6 +66,10 @@
 				bypass;
 			};
 			flags-7 {
+				/* choose one of: epa-elna / epa / elna / bypass */
+				epa-elna;
+			};
+			flags-8 {
 				/* choose one of: epa-elna / epa / elna / bypass */
 				epa-elna;
 			};
