@@ -2093,10 +2093,6 @@ static int mt6681_put_volsw(struct snd_kcontrol *kcontrol,
 	int ret;
 	unsigned int pga_cara = 0;
 
-	dev_info(priv->dev,
-		"%s(), id index %d name %s, reg(0x%x) = 0x%x, set index = %x indeR = %x\n",
-		__func__, kcontrol->id.index, kcontrol->id.name, mc->reg, reg, index, indexR);
-
 	scp_wake_request(adap);
 
 	switch (mc->reg) {
