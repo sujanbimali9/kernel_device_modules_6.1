@@ -293,6 +293,31 @@ out:
 	return ret;
 }
 
+static void count_page_array_en_num(void)
+{
+	int i;
+	uint32_t idx;
+
+	for (idx = 0; idx < 2; idx++) {
+	#if PAGE_ARRAY_CNT_EN
+		if (g_ammu_stable_ptr->stable_info.DRAM_page_array_mask[idx] != 0) {
+			for (i = 31; i >= 0; i--) {
+				if (g_ammu_stable_ptr->stable_info.DRAM_page_array_mask[idx]
+					& (1 << i))
+					break;
+			}
+
+			g_ammu_stable_ptr->stable_info.DRAM_page_array_en_num[idx] =
+				i + 1;
+		} else {
+			g_ammu_stable_ptr->stable_info.DRAM_page_array_en_num[idx] = 0;
+		}
+	#else
+		g_ammu_stable_ptr->stable_info.DRAM_page_array_en_num[idx] = 32;
+	#endif
+	}
+}
+
 /* device_va == iova */
 int addr_encode_and_write_stable(enum AMMU_BUF_TYPE type, uint64_t session, uint64_t device_va,
 								uint32_t buf_size, uint64_t *eva)
@@ -404,8 +429,11 @@ int addr_encode_and_write_stable(enum AMMU_BUF_TYPE type, uint64_t session, uint
 		g_ammu_stable_ptr->stable_info.mem_mask |= (1 << DRAM_1_4G);
 	}
 
+	count_page_array_en_num();
+
 out_after_lock:
 	mutex_unlock(&g_ammu_table_set.table_lock);
+
 out:
 	*eva = ret_eva;
 
@@ -413,31 +441,6 @@ out:
 		ret_eva, device_va, session);
 
 	return ret;
-}
-
-static void count_page_array_en_num(void)
-{
-	int i;
-	uint32_t idx;
-
-	for (idx = 0; idx < 2; idx++) {
-	#if PAGE_ARRAY_CNT_EN
-		if (g_ammu_stable_ptr->stable_info.DRAM_page_array_mask[idx] != 0) {
-			for (i = 31; i >= 0; i--) {
-				if (g_ammu_stable_ptr->stable_info.DRAM_page_array_mask[idx]
-					& (1 << i))
-					break;
-			}
-
-			g_ammu_stable_ptr->stable_info.DRAM_page_array_en_num[idx] =
-				i + 1;
-		} else {
-			g_ammu_stable_ptr->stable_info.DRAM_page_array_en_num[idx] = 0;
-		}
-	#else
-		g_ammu_stable_ptr->stable_info.DRAM_page_array_en_num[idx] = 32;
-	#endif
-	}
 }
 
 /* get session table by session */
@@ -453,8 +456,6 @@ int get_session_table(uint64_t session, void **tbl_kva, uint32_t *size)
 		ret = -ENOMEM;
 		goto out;
 	}
-
-	count_page_array_en_num();
 
 	AMMU_LOG_VERBO("stable session(%llx), mem_mask = 0x%08x\n",
 		g_ammu_stable_ptr->session,
