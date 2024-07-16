@@ -156,7 +156,7 @@ static void esd_cmdq_timeout_cb(struct cmdq_cb_data data)
 	mtk_drm_crtc_dump(crtc);
 }
 
-int _mtk_esd_check_read(struct drm_crtc *crtc)
+int _mtk_esd_check_read(struct drm_crtc *crtc, int check_num)
 {
 	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
 	struct mtk_ddp_comp *output_comp;
@@ -244,7 +244,7 @@ int _mtk_esd_check_read(struct drm_crtc *crtc)
 		mtk_disp_mutex_trigger(mtk_crtc->mutex[0], cmdq_handle);
 		mtk_ddp_comp_io_cmd(output_comp, cmdq_handle, COMP_REG_START,
 				    NULL);
-		if (atomic_read(&esd_ctx->target_time) == 0) {
+		if (atomic_read(&esd_ctx->target_time) == 0 && check_num == 0) {
 			if (esd_ctx->chk_retry < ESD_CHK_TRY_CNT) {
 				esd_ctx->chk_retry++;
 				ret = 0;
@@ -399,7 +399,7 @@ static int mtk_drm_request_eint(struct drm_crtc *crtc)
 	return ret;
 }
 
-static int mtk_drm_esd_check(struct drm_crtc *crtc)
+static int mtk_drm_esd_check(struct drm_crtc *crtc, int check_num)
 {
 	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
 	struct mtk_panel_ext *panel_ext;
@@ -430,7 +430,7 @@ static int mtk_drm_esd_check(struct drm_crtc *crtc)
 		ret = _mtk_esd_check_eint(crtc);
 	} else { /* READ LCM CMD  */
 		CRTC_MMP_MARK(index, esd_check, 2, 0);
-		ret = _mtk_esd_check_read(crtc);
+		ret = _mtk_esd_check_read(crtc, check_num);
 	}
 
 	/* switch ESD check mode */
@@ -586,7 +586,7 @@ int mtk_drm_esd_testing_process(struct mtk_drm_esd_ctx *esd_ctx, bool need_lock)
 		i = 0; /* repeat */
 		do {
 			mtk_drm_trace_begin("esd loop:%d", i);
-			ret = mtk_drm_esd_check(crtc);
+			ret = mtk_drm_esd_check(crtc, i);
 			if (!ret) /* success */
 				break;
 
