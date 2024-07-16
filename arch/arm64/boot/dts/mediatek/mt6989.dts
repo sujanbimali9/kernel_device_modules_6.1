@@ -12019,7 +12019,7 @@
 			prebuilt-enable;
 			tf-high-addr = <0x3d533>;
 			event-debug;
-			event-dump-range = <0 383>;
+			event-dump-range = <0 473>;
 			event-clr-range = <0 268>;
 			dram-pwr-base = <0x1c001000>;
 			error-irq-sw-req;
