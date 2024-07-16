@@ -9,7 +9,8 @@
 			"qm42195-qm45197",		/* pinctrl-1 */
 			"nofem-sky85732",		/* pinctrl-2 */
 			"qm42195-nofem",		/* pinctrl-3 */
-			"vc536411-nofem";		/* pinctrl-4 */
+			"vc536411-nofem",		/* pinctrl-4 */
+			"nofem-qm45197";		/* pinctrl-5 */
 
 	pinctrl-0 = <&wlan7207h_wf0>, <&wlan7207h_wf1>,
 		<&wlan7207c_wf0>, <&wlan7207c_wf1>;
@@ -22,6 +23,8 @@
 	pinctrl-3 = <&qm42195_wf0>, <&qm42195_wf1>;
 
 	pinctrl-4 = <&vc536411_wf0>, <&vc536411_wf1>;
+
+	pinctrl-5 = <&qm45197_wf0>, <&qm45197_wf1>;
 
 	/* FEM ID */
 	nofem: nofem {
