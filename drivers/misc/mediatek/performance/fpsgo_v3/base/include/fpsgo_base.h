@@ -32,6 +32,7 @@
 #define FPSGO_MAX_RENDER_INFO_SIZE 20
 #define FPSGO_MAX_BQ_ID_SIZE 200
 #define FPSGO_MAX_SBE_SPID_LOADING_SIZE 10
+#define MAX_SF_BUFFER_SIZE 10
 
 enum {
 	FPSGO_SET_UNKNOWN = -1,
@@ -271,6 +272,19 @@ struct fpsgo_boost_attr {
 	int aa_b_minus_idle_t_by_pid;
 };
 
+struct FSTB_FRAME_L2Q_INFO {
+	unsigned long long sf_buf_id;
+	unsigned long long queue_end_ns;
+	unsigned long long logic_head_ts;
+	unsigned long long logic_head_fixed_ts;
+	unsigned long long l2l_ts;
+	unsigned long long l2q_ts;
+	unsigned int is_logic_head_alive;
+
+	unsigned int frame_id;
+	unsigned int is_magt_l2q_enabled;
+};
+
 struct render_info {
 	struct rb_node render_key_node;
 	struct list_head bufferid_list;
@@ -302,6 +316,7 @@ struct render_info {
 	unsigned long long enqueue_length;
 	unsigned long long enqueue_length_real;
 	unsigned long long dequeue_length;
+	unsigned long long prev_t_enqueue_end;
 	unsigned long long Q2Q_time;
 	unsigned long long running_time;
 	unsigned long long raw_runtime;
@@ -332,6 +347,10 @@ struct render_info {
 
 	/* boost policy */
 	struct fpsgo_boost_attr attr;
+
+	/* touch latency */
+	struct FSTB_FRAME_L2Q_INFO l2q_info[MAX_SF_BUFFER_SIZE];
+	int l2q_index;
 
 	int target_fps_origin;
 };
@@ -438,6 +457,11 @@ struct fpsgo_attr_by_pid *fpsgo_find_attr_by_tid(int pid, int add_new);
 void delete_attr_by_tid(int tid);
 int is_to_delete_fpsgo_tid_attr(struct fpsgo_attr_by_pid *fpsgo_attr);
 #endif  // FPSGO_MW
+int fpsgo_get_lr_pair(unsigned long long sf_buffer_id,
+	unsigned long long *cur_queue_ts,
+	unsigned long long *l2q_ns, unsigned long long *logic_head_ts,
+	unsigned int *is_logic_head_alive,
+	unsigned long long *now_ts);
 struct render_info *eara2fpsgo_search_render_info(int pid,
 		unsigned long long buffer_id);
 void fpsgo_delete_render_info(int pid,

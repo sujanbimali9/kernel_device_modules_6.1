@@ -2755,6 +2755,64 @@ int fpsgo_ctrl2base_query_sbe_spid_loading(void)
 	return ret;
 }
 
+int fpsgo_get_lr_pair(unsigned long long sf_buffer_id,
+	unsigned long long *cur_queue_ts,
+	unsigned long long *l2q_ns, unsigned long long *logic_head_ts,
+	unsigned int *is_logic_head_alive,
+	unsigned long long *now_ts)
+{
+	struct render_info *iter, *curr_iter;
+	struct rb_node *n;
+	struct FSTB_FRAME_L2Q_INFO *cur_l2q_info;
+	int i = 0, buf_index = -1, ret = 0;
+	unsigned long long now_ktime_ns, now_queue_end_ns = 0;
+
+	now_ktime_ns = fpsgo_get_time();
+
+	fpsgo_render_tree_lock(__func__);
+
+	for (n = rb_first(&render_pid_tree); n != NULL; n = rb_next(n)) {
+		iter = rb_entry(n, struct render_info, render_key_node);
+		for (i = 0; i < MAX_SF_BUFFER_SIZE; i++) {
+			cur_l2q_info = &(iter->l2q_info[i]);
+				if (!cur_l2q_info)
+					continue;
+			if (cur_l2q_info->sf_buf_id == sf_buffer_id &&
+				cur_l2q_info->queue_end_ns > now_queue_end_ns) {
+				buf_index = i;
+				now_queue_end_ns = cur_l2q_info->queue_end_ns;
+				curr_iter = iter;
+			}
+		}
+	}
+
+	if (buf_index == -1 || !curr_iter) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	cur_l2q_info = &(curr_iter->l2q_info[buf_index]);
+
+	if (logic_head_ts)
+		*logic_head_ts = cur_l2q_info->logic_head_fixed_ts;
+	if (cur_queue_ts)
+		*cur_queue_ts = cur_l2q_info->queue_end_ns;
+	if (l2q_ns)
+		*l2q_ns = cur_l2q_info->l2q_ts;
+	if (is_logic_head_alive)
+		*is_logic_head_alive = cur_l2q_info->is_logic_head_alive;
+	if (now_ts)
+		*now_ts = now_ktime_ns;
+
+out:
+	fpsgo_main_trace("[%s] sf_buf_id=%llu, idx=%d, queue_ts=%llu, l2q_ns=%llu, is_logic_alive=%d, now_ts=%llu",
+		__func__, sf_buffer_id, buf_index, cur_l2q_info->queue_end_ns, cur_l2q_info->l2q_ts,
+		cur_l2q_info->is_logic_head_alive, now_ktime_ns);
+
+	fpsgo_render_tree_unlock(__func__);
+	return ret;
+}
+
 static unsigned long long fpsgo_traverse_render_rb_tree(struct rb_root *rbr,
 	unsigned long long target_addr)
 {
