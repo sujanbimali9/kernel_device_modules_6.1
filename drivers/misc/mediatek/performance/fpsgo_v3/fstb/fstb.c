@@ -762,9 +762,8 @@ static struct FSTB_FRAME_INFO *add_new_frame_info(int pid, unsigned long long bu
 		new_frame_info->proc_id = 0;
 	}
 
-	kmemleak_not_leak(new_frame_info);
-
 out:
+	kmemleak_not_leak(new_frame_info);
 	return new_frame_info;
 }
 
