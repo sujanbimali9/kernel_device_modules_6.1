@@ -912,11 +912,8 @@ static void tp_select_path(struct mml_topology_cache *cache,
 		goto check_rr;
 	}
 
-	en_rsz = tp_need_resize(&cfg->info, &can_binning);
-	if (mml_force_rsz)
-		en_rsz = true;
-	en_pq = en_rsz || cfg->info.dest[0].pq_config.en ||
-		(MML_FMT_ALPHA(dest_fmt) && MML_FMT_IS_YUV(dest_fmt));
+	en_rsz = tp_need_resize(&cfg->info, &can_binning) || mml_force_rsz;
+	en_pq = en_rsz || cfg->info.dest[0].pq_config.en || MML_FMT_IS_AYUV(dest_fmt);
 
 	if (cfg->info.mode == MML_MODE_DDP_ADDON) {
 		/* direct-link in/out for addon case */
@@ -1227,9 +1224,9 @@ static enum mml_mode tp_query_mode(struct mml_dev *mml, struct mml_frame_info *i
 	if (info->alpha) {
 		*reason = mml_query_alpha;
 		if (!MML_FMT_ALPHA(info->src.format) ||
-		    info->src.width <= 9 ||
+		    info->src.width <= 32 ||
 		    info->dest_cnt != 1 ||
-		    info->dest[0].crop.r.width <= 9 ||
+		    info->dest[0].crop.r.width <= 32 ||
 		    info->dest[0].compose.width <= 9)
 			goto not_support;
 		return MML_MODE_MML_DECOUPLE;
