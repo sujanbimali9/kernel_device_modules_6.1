@@ -486,6 +486,7 @@ struct mtk_mmc_compatible {
 #define support_new_rx(x)	((x) != 0)
 	bool set_crypto_enable_in_sw;
 	bool need_power_voter;
+	bool hs400_free_run;
 };
 
 struct msdc_tune_para {

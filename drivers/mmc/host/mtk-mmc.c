@@ -461,6 +461,7 @@ static const struct mtk_mmc_compatible mt6878_compat = {
 	},
 	.set_crypto_enable_in_sw = true,
 	.need_power_voter = true,
+	.hs400_free_run = true,
 };
 
 static const struct of_device_id msdc_of_ids[] = {
@@ -952,6 +953,15 @@ static void msdc_set_mclk(struct msdc_host *host, unsigned char timing, u32 hz)
 		}
 	}
 	sdr_clr_bits(host->base + MSDC_CFG, MSDC_CFG_CKPDN);
+
+	/* In order to ensure that hs400 mode R1b response
+	 * will not timeout, set free run mode.
+	 */
+	if (host->dev_comp->hs400_free_run &&
+		host->timing == MMC_TIMING_MMC_HS400 &&
+		!(mmc->caps2 & MMC_CAP2_NO_MMC)) {
+		sdr_set_bits(host->base + MSDC_CFG, MSDC_CFG_CKPDN);
+	}
 
 	ret = msdc_prepare_set_mclk(host, true);
 	if (ret)
