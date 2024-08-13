@@ -614,6 +614,17 @@
 			mcu-data-len = <4 4 4 4 4 2>;
 		};
 
+	disp_pwm0: disp_pwm0@1100e000 {
+		compatible = "mediatek,mt6897-disp-pwm";
+		reg = <0 0x1100e000 0 0x1000>;
+		interrupts = <GIC_SPI 254 IRQ_TYPE_LEVEL_HIGH 0>;
+		#pwm-cells = <2>;
+		clocks = <&topckgen_clk CLK_TOP_DISP_PWM_SEL>,
+			 <&pericfg_ao_clk CLK_PERAOP_DISP_PWM0>;
+		clock-names = "main", "mm";
+		status = "disabled";
+	};
+
 	i2c0: i2c@11d00000 {
 		compatible = "mediatek,mt6897-i2c";
 		reg = <0 0x11d00000 0 0x1000>,
