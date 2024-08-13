@@ -27,6 +27,7 @@
 #include "mtk_drm_trace.h"
 #include "mtk_disp_vidle.h"
 #include "mtk_dsi.h"
+#include "mtk_drm_graphics_base.h"
 
 #define MAX_ENTER_IDLE_RSZ_RATIO 300
 #define MTK_DRM_CPU_MAX_COUNT 8
@@ -2409,6 +2410,8 @@ void mtk_drm_idlemgr_wb_reconfig(struct mtk_drm_crtc *mtk_crtc, struct cmdq_pkt 
 	struct mtk_ddp_comp *comp, *ovl_comp = NULL;
 	dma_addr_t status_pad, break_pad;
 	int i, j;
+	struct mtk_panel_params *params;
+	enum mtk_drm_color_mode lcm_cm;
 
 	GCE_COND_DECLARE;
 	struct cmdq_operand lop, rop;
@@ -2478,6 +2481,15 @@ void mtk_drm_idlemgr_wb_reconfig(struct mtk_drm_crtc *mtk_crtc, struct cmdq_pkt 
 	mtk_plane_state->crtc = crtc;
 	mtk_plane_state->base.crtc = crtc;
 	mtk_plane_state->base.alpha = ((0xFF << 8) | 0xFF);
+
+
+	params = mtk_drm_get_lcm_ext_params(crtc);
+	if (params) {
+		lcm_cm = params->lcm_color_mode;
+		if(lcm_cm == MTK_DRM_COLOR_MODE_DISPLAY_P3)
+			mtk_plane_state->pending.prop_val[PLANE_PROP_DATASPACE] = MTK_DRM_DATASPACE_DISPLAY_P3;
+	} else
+		mtk_plane_state->pending.prop_val[PLANE_PROP_DATASPACE] = MTK_DRM_DATASPACE_SRGB;
 
 	mtk_ddp_comp_layer_config(ovl_comp, 0, mtk_plane_state, cmdq_handle);
 
