@@ -1760,18 +1760,12 @@ static void scp_control_feature(enum feature_id id, bool enable)
 
 	/* send request only when scp is not down */
 	if (scp_ready[SCP_A_ID]) {
-		if (scp_current_freq != scp_expected_freq
-			|| sap_expected_freq != last_sap_expected_freq
-		) {
-			/* set scp freq. */
-
-			if (scp_dvfs_feature_enable())
-				ret = scp_request_freq();
-
-			if (ret < 0) {
-				pr_notice("[SCP] %s: req_freq fail\n", __func__);
-				WARN_ON(1);
-			}
+		/* set scp freq. */
+		if (scp_dvfs_feature_enable())
+			ret = scp_request_freq();
+		if (ret < 0) {
+			pr_notice("[SCP] %s: req_freq fail\n", __func__);
+			WARN_ON(1);
 		}
 	} else {
 		pr_notice("[SCP]Not send SCP DVFS request because SCP is down\n");
