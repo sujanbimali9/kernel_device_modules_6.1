@@ -434,7 +434,6 @@ static s32 hdr_config_frame(struct mml_comp *comp, struct mml_task *task,
 	struct cmdq_pkt *pkt = task->pkts[ccfg->pipe];
 
 	struct hdr_frame_data *hdr_frm = hdr_frm_data(ccfg);
-	struct mml_frame_data *src = &cfg->info.src;
 	const struct mml_frame_dest *dest = &cfg->info.dest[ccfg->node->out_idx];
 	struct mml_comp_hdr *hdr = comp_to_hdr(comp);
 	const phys_addr_t base_pa = comp->base_pa;
@@ -450,12 +449,13 @@ static s32 hdr_config_frame(struct mml_comp *comp, struct mml_task *task,
 	mml_pq_msg("%s pipe_id[%d] engine_id[%d] en_hdr[%d] mode[%d] pkt[%p]", __func__,
 		ccfg->pipe, comp->id, dest->pq_config.en_hdr, mode, pkt);
 
-	if (MML_FMT_10BIT(src->format) || MML_FMT_10BIT(dest->data.format))
-		cmdq_pkt_write(pkt, NULL, base_pa + hdr->data->reg_table[HDR_TOP],
-			3 << 28, 0x30000000);
-	else
-		cmdq_pkt_write(pkt, NULL, base_pa + hdr->data->reg_table[HDR_TOP],
-			1 << 28, 0x30000000);
+	/* clear event */
+	if (hdr->event_eof)
+		cmdq_pkt_clear_event(pkt, hdr->event_eof);
+
+	/* Enable 10-bit output by default
+	 * cmdq_pkt_write(pkt, NULL, base_pa + hdr->data->reg_table[HDR_TOP], 3 << 28, 0x30000000);
+	 */
 
 	if (!dest->pq_config.en_hdr) {
 		/* relay mode */

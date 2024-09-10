@@ -40,6 +40,9 @@ module_param(mml_max_hrt, int, 0644);
 int mml_force_rsz;
 module_param(mml_force_rsz, int, 0644);
 
+int mml_rgbrot;
+module_param(mml_rgbrot, int, 0644);
+
 int mml_path_mode;
 module_param(mml_path_mode, int, 0644);
 
@@ -906,6 +909,11 @@ static void tp_select_path(struct mml_topology_cache *cache,
 	if (cfg->info.mode == MML_MODE_RACING) {
 		/* always rdma to wrot for racing case */
 		scene = PATH_MML_NOPQ;
+		if (mml_rgbrot &&
+		    MML_FMT_IS_RGB(cfg->info.src.format) && MML_FMT_IS_RGB(dest_fmt)) {
+			mml_msg("[topology]enable rgb rotate");
+			cfg->rgbrot = true;
+		}
 		goto check_rr;
 	} else if (cfg->info.mode == MML_MODE_APUDC) {
 		scene = PATH_MML_NOPQ;
@@ -929,6 +937,11 @@ static void tp_select_path(struct mml_topology_cache *cache,
 	} else if (!en_pq) {
 		/* rdma to wrot */
 		scene = PATH_MML_NOPQ;
+		if (mml_rgbrot &&
+		    MML_FMT_IS_RGB(cfg->info.src.format) && MML_FMT_IS_RGB(dest_fmt)) {
+			mml_msg("[topology]enable rgb rotate");
+			cfg->rgbrot = true;
+		}
 	} else if (cfg->info.dest_cnt == 2) {
 		if (cfg->info.dest[0].pq_config.en_region_pq) {
 			scene = PATH_MML_2IN_2OUT;
