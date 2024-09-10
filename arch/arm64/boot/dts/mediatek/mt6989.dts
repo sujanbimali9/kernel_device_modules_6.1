@@ -12393,6 +12393,12 @@
 		compatible = "mediatek,mml-test";
 		mediatek,mml = <&mmlsys_config>;
 	};
+
+	mml-ait {
+		compatible = "mediatek,mml-ait";
+		mediatek,mml = <&mmlsys_config>;
+	};
+
 	mm_smmu_hrt_normal: mm-smmu-hrt-normal {
 		compatible = "mediatek,smmu-share-group";
 		label = "mm_smmu_hrt_normal";
