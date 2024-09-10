@@ -29,6 +29,7 @@
 #include "fstb.h"
 #include "fstb_usedext.h"
 #include "fpsgo_usedext.h"
+#include "fps_composer.h"
 
 #if IS_ENABLED(CONFIG_MTK_GPU_SUPPORT)
 #include "ged_kpi.h"
@@ -1415,8 +1416,12 @@ out:
 		fstb_post_process_target_fps(local_final_tfps, tolerence_fps, iter->target_fps_diff,
 				&local_final_tfps, NULL, NULL, iter->vsync_app_fps_disable);
 
-		ged_kpi_set_target_FPS_margin(iter->bufid, local_final_tfps, tolerence_fps,
-			iter->target_fps_diff, iter->cpu_time);
+		if (!fpsgo_com_get_mfrc_is_on())
+			ged_kpi_set_target_FPS_margin(iter->bufid, local_final_tfps, tolerence_fps,
+				iter->target_fps_diff, iter->cpu_time);
+		else
+			ged_kpi_set_target_FPS_margin(iter->bufid, local_final_tfps * 2, tolerence_fps,
+				iter->target_fps_diff, iter->cpu_time);
 	}
 
 	if (fpsgo2msync_hint_frameinfo_fp)

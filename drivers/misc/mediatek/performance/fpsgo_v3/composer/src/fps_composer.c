@@ -66,6 +66,10 @@ static unsigned long long last_update_sbe_dep_ts;
 // touch latency
 static int fpsgo_touch_latency_ko_ready;
 
+// mfrc
+static int mfrc_active;
+static int mfrc_by_pass_frame_num = 2;
+
 static void fpsgo_com_notify_to_do_recycle(struct work_struct *work);
 static DECLARE_WORK(do_recycle_work, fpsgo_com_notify_to_do_recycle);
 static DEFINE_MUTEX(recycle_lock);
@@ -402,6 +406,8 @@ static void fpsgo_com_set_policy_cmd(int cmd, int value, int tgid,
 			iter->app_cam_fps_align_margin = value;
 		else if (cmd == 4)
 			iter->app_cam_time_align_ratio = value;
+		else if (cmd == 5)
+			iter->mfrc_active_by_pid = value;
 
 		if (!op)
 			fpsgo_com_delete_policy_cmd(iter);
@@ -509,6 +515,7 @@ int fpsgo_com_check_frame_type(int pid, int tgid, int queue_SF, int api,
 	int local_bypass_non_SF = bypass_non_SF;
 	int local_control_api_mask = control_api_mask;
 	int local_control_hwui = control_hwui;
+	int local_mfrc_active = mfrc_active;
 	struct fpsgo_com_policy_cmd *iter = NULL;
 
 	mutex_lock(&fpsgo_com_policy_cmd_lock);
@@ -520,6 +527,8 @@ int fpsgo_com_check_frame_type(int pid, int tgid, int queue_SF, int api,
 			local_control_api_mask = iter->control_api_mask_by_pid;
 		if (iter->control_hwui_by_pid != BY_PID_DEFAULT_VAL)
 			local_control_hwui = iter->control_hwui_by_pid;
+		if (iter->mfrc_active_by_pid != BY_PID_DEFAULT_VAL)
+			local_mfrc_active = iter->mfrc_active_by_pid;
 	}
 	mutex_unlock(&fpsgo_com_policy_cmd_lock);
 
@@ -544,6 +553,9 @@ int fpsgo_com_check_frame_type(int pid, int tgid, int queue_SF, int api,
 
 	if (pid == tgid)
 		return BY_PASS_TYPE;
+
+	if (local_mfrc_active)
+		return MFRC_FRAME;
 
 	return NON_VSYNC_ALIGNED_TYPE;
 }
@@ -829,8 +841,14 @@ void fpsgo_ctrl2comp_enqueue_start(int pid,
 			f_render->hwui, f_render->sbe_control_flag,
 			f_render->control_pid_flag);
 
+	if (f_render->frame_type == MFRC_FRAME) {
+		if (f_render->frame_count % mfrc_by_pass_frame_num == 1)
+			f_render->frame_type = MFRC_BY_PASS_FRAME;
+	}
+
 	switch (f_render->frame_type) {
 	case NON_VSYNC_ALIGNED_TYPE:
+	case MFRC_FRAME:
 		f_render->t_enqueue_start = enqueue_start_time;
 		FPSGO_COM_TRACE(
 			"pid[%d] type[%d] enqueue_s:%llu",
@@ -849,6 +867,8 @@ void fpsgo_ctrl2comp_enqueue_start(int pid,
 			f_render->api, "bypass_api");
 		fpsgo_systrace_c_fbt(pid, f_render->buffer_id,
 			f_render->hwui, "bypass_hwui");
+		break;
+	case MFRC_BY_PASS_FRAME:
 		break;
 	default:
 		FPSGO_COM_TRACE("type not found pid[%d] type[%d]",
@@ -911,9 +931,6 @@ void fpsgo_ctrl2comp_enqueue_end(int pid,
 		goto exit;
 	}
 
-	pprev_enqueue_end = f_render->prev_t_enqueue_end;
-	prev_enqueue_end = f_render->t_enqueue_end;
-
 	/* hwui */
 	h_info = fpsgo_search_and_add_hwui_info(f_render->pid, 0);
 	if (h_info)
@@ -968,8 +985,16 @@ void fpsgo_ctrl2comp_enqueue_end(int pid,
 		}
 	}
 
+	if (f_render->frame_type == MFRC_FRAME) {
+		if (f_render->frame_count % mfrc_by_pass_frame_num == 1)
+			f_render->frame_type = MFRC_BY_PASS_FRAME;
+	}
+
 	switch (f_render->frame_type) {
 	case NON_VSYNC_ALIGNED_TYPE:
+	case MFRC_FRAME:
+		pprev_enqueue_end = f_render->prev_t_enqueue_end;
+		prev_enqueue_end = f_render->t_enqueue_end;
 		if (f_render->t_enqueue_end)
 			f_render->Q2Q_time =
 				enqueue_end_time - f_render->t_enqueue_end;
@@ -1012,13 +1037,18 @@ void fpsgo_ctrl2comp_enqueue_end(int pid,
 		fpsgo_comp2minitop_queue_update(enqueue_end_time);
 		fpsgo_comp2gbe_frame_update(f_render->pid, f_render->buffer_id);
 
+		f_render->frame_count++;
+
 		fpsgo_systrace_c_fbt_debug(-300, 0, f_render->enqueue_length,
 			"%d_%d-enqueue_length", pid, f_render->frame_type);
 		break;
 	case BY_PASS_TYPE:
+		pprev_enqueue_end = f_render->prev_t_enqueue_end;
+		prev_enqueue_end = f_render->t_enqueue_end;
 		if (f_render->t_enqueue_end)
 			f_render->Q2Q_time =
 				enqueue_end_time - f_render->t_enqueue_end;
+		f_render->prev_t_enqueue_end = f_render->t_enqueue_end;
 		f_render->t_enqueue_end = enqueue_end_time;
 		f_render->enqueue_length =
 			enqueue_end_time - f_render->t_enqueue_start;
@@ -1044,6 +1074,12 @@ void fpsgo_ctrl2comp_enqueue_end(int pid,
 			f_render->api,
 			f_render->hwui);
 		fpsgo_stop_boost_by_render(f_render);
+		break;
+	case MFRC_BY_PASS_FRAME:
+		f_render->frame_count++;
+
+		fpsgo_systrace_c_fbt_debug(-300, 0, f_render->enqueue_length,
+			"%d_%d-enqueue_length", pid, f_render->frame_type);
 		break;
 	default:
 		FPSGO_COM_TRACE("type not found pid[%d] type[%d]",
@@ -1114,6 +1150,13 @@ void fpsgo_ctrl2comp_dequeue_start(int pid,
 			f_render->hwui, f_render->sbe_control_flag,
 			f_render->control_pid_flag);
 
+	if (f_render->frame_type == MFRC_FRAME) {
+		if (f_render->frame_count % mfrc_by_pass_frame_num == 1)
+			f_render->frame_type = MFRC_BY_PASS_FRAME;
+		else
+			f_render->t_dequeue_start = dequeue_start_time;
+	}
+
 	switch (f_render->frame_type) {
 	case NON_VSYNC_ALIGNED_TYPE:
 		f_render->t_dequeue_start = dequeue_start_time;
@@ -1183,8 +1226,14 @@ void fpsgo_ctrl2comp_dequeue_end(int pid,
 			f_render->hwui, f_render->sbe_control_flag,
 			f_render->control_pid_flag);
 
+	if (f_render->frame_type == MFRC_FRAME) {
+		if (f_render->frame_count % mfrc_by_pass_frame_num == 1)
+			f_render->frame_type = MFRC_BY_PASS_FRAME;
+	}
+
 	switch (f_render->frame_type) {
 	case NON_VSYNC_ALIGNED_TYPE:
+	case MFRC_FRAME:
 		f_render->t_dequeue_end = dequeue_end_time;
 		f_render->dequeue_length =
 			dequeue_end_time - f_render->t_dequeue_start;
@@ -1200,6 +1249,8 @@ void fpsgo_ctrl2comp_dequeue_end(int pid,
 		f_render->t_dequeue_end = dequeue_end_time;
 		f_render->dequeue_length =
 			dequeue_end_time - f_render->t_dequeue_start;
+		break;
+	case MFRC_BY_PASS_FRAME:
 		break;
 	default:
 		FPSGO_COM_TRACE("type not found pid[%d] type[%d]",
@@ -2052,6 +2103,11 @@ out:
 	mutex_unlock(&recycle_lock);
 }
 
+int fpsgo_com_get_mfrc_is_on(void)
+{
+	return mfrc_active;
+}
+
 int fpsgo_ktf2comp_test_check_BQ_type(int *a_p_pid_arr,  int *a_c_pid_arr,
 	int *a_c_tid_arr, int *a_api_arr, unsigned long long *a_bufID_arr, int a_num,
 	int *r_tgid_arr, int *r_pid_arr, unsigned long long *r_bufID_arr, int *r_api_arr,
@@ -2326,6 +2382,10 @@ FPSGO_COM_SYSFS_READ(fps_align_margin, 1, fps_align_margin);
 FPSGO_COM_SYSFS_WRITE_VALUE(fps_align_margin, fps_align_margin, 0, 10);
 static KOBJ_ATTR_RW(fps_align_margin);
 
+FPSGO_COM_SYSFS_READ(mfrc_active, 1, mfrc_active);
+FPSGO_COM_SYSFS_WRITE_VALUE(mfrc_active, mfrc_active, 0, 1);
+static KOBJ_ATTR_RW(mfrc_active);
+
 FPSGO_COM_SYSFS_READ(bypass_non_SF_by_pid, 0, 0);
 FPSGO_COM_SYSFS_WRITE_POLICY_CMD(bypass_non_SF_by_pid, 0, 0, 1);
 static KOBJ_ATTR_RW(bypass_non_SF_by_pid);
@@ -2345,6 +2405,9 @@ static KOBJ_ATTR_RW(app_cam_fps_align_margin_by_pid);
 FPSGO_COM_SYSFS_READ(app_cam_time_align_ratio_by_pid, 0, 0);
 FPSGO_COM_SYSFS_WRITE_POLICY_CMD(app_cam_time_align_ratio_by_pid, 4, 0, 100);
 static KOBJ_ATTR_RW(app_cam_time_align_ratio_by_pid);
+
+FPSGO_COM_SYSFS_WRITE_POLICY_CMD(mfrc_active_by_pid, 5, 0, 1);
+static KOBJ_ATTR_WO(mfrc_active_by_pid);
 
 static ssize_t fpsgo_com_policy_cmd_show(struct kobject *kobj,
 		struct kobj_attribute *attr,
@@ -2369,7 +2432,7 @@ static ssize_t fpsgo_com_policy_cmd_show(struct kobject *kobj,
 		iter = rb_entry(rbn, struct fpsgo_com_policy_cmd, rb_node);
 		length = scnprintf(temp + pos,
 			FPSGO_SYSFS_MAX_BUFF_SIZE - pos,
-			"%dth\ttgid:%d\tbypass_non_SF:%d\tcontrol_api_mask:%d\tcontrol_hwui:%d\tapp_cam_align:(%d,%d)\tapp_min_fps:%d\tts:%llu\n",
+			"%dth\ttgid:%d\tbypass_non_SF:%d\tcontrol_api_mask:%d\tcontrol_hwui:%d\tapp_cam_align:(%d,%d)\tapp_min_fps:%d\tmfrc%d\tts:%llu\n",
 			i,
 			iter->tgid,
 			iter->bypass_non_SF_by_pid,
@@ -2378,6 +2441,7 @@ static ssize_t fpsgo_com_policy_cmd_show(struct kobject *kobj,
 			iter->app_cam_fps_align_margin,
 			iter->app_cam_time_align_ratio,
 			iter->app_cam_meta_min_fps,
+			iter->mfrc_active_by_pid,
 			iter->ts);
 		pos += length;
 		i++;
@@ -2576,6 +2640,8 @@ void __exit fpsgo_composer_exit(void)
 	fpsgo_sysfs_remove_file(comp_kobj, &kobj_attr_is_fpsgo_boosting);
 	fpsgo_sysfs_remove_file(comp_kobj, &kobj_attr_app_cam_fps_align_margin_by_pid);
 	fpsgo_sysfs_remove_file(comp_kobj, &kobj_attr_app_cam_time_align_ratio_by_pid);
+	fpsgo_sysfs_remove_file(comp_kobj, &kobj_attr_mfrc_active);
+	fpsgo_sysfs_remove_file(comp_kobj, &kobj_attr_mfrc_active_by_pid);
 
 	fpsgo_sysfs_remove_dir(&comp_kobj);
 }
@@ -2610,6 +2676,8 @@ int __init fpsgo_composer_init(void)
 		fpsgo_sysfs_create_file(comp_kobj, &kobj_attr_is_fpsgo_boosting);
 		fpsgo_sysfs_create_file(comp_kobj, &kobj_attr_app_cam_fps_align_margin_by_pid);
 		fpsgo_sysfs_create_file(comp_kobj, &kobj_attr_app_cam_time_align_ratio_by_pid);
+		fpsgo_sysfs_create_file(comp_kobj, &kobj_attr_mfrc_active);
+		fpsgo_sysfs_create_file(comp_kobj, &kobj_attr_mfrc_active_by_pid);
 	}
 
 	return 0;
