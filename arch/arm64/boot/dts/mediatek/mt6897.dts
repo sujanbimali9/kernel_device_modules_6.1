@@ -660,7 +660,6 @@
 			<&pericfg_ao_clk CLK_PERAOP_DMA_BCLK>;
 		clock-names = "main", "dma";
 		clock-div = <1>;
-		ch-offset-i2c = <0x100>;
 		scl-gpio-id = <141>;
 		sda-gpio-id = <142>;
 	};
@@ -687,7 +686,6 @@
 			<&pericfg_ao_clk CLK_PERAOP_DMA_BCLK>;
 		clock-names = "main", "dma";
 		clock-div = <1>;
-		ch-offset-i2c = <0x100>;
 		scl-gpio-id = <145>;
 		sda-gpio-id = <146>;
 	};
@@ -742,7 +740,6 @@
 			<&pericfg_ao_clk CLK_PERAOP_DMA_BCLK>;
 		clock-names = "main", "dma";
 		clock-div = <1>;
-		ch-offset-i2c = <0x100>;
 		scl-gpio-id = <153>;
 		sda-gpio-id = <154>;
 	};
@@ -756,7 +753,6 @@
 			<&pericfg_ao_clk CLK_PERAOP_DMA_BCLK>;
 		clock-names = "main", "dma";
 		clock-div = <1>;
-		ch-offset-i2c = <0x100>;
 		scl-gpio-id = <155>;
 		sda-gpio-id = <156>;
 	};
