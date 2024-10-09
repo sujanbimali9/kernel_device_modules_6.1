@@ -1958,8 +1958,8 @@ void mtk_mipi_tx_dpn_config(struct phy *phy, bool en)
 #ifndef CONFIG_FPGA_EARLY_PORTING
 static int mtk_mipi_tx_pll_dphy_config_mt6985(struct mtk_mipi_tx *mipi_tx)
 {
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
-	unsigned int div3, div3_en;
+	unsigned int txdiv, txdiv0, tmp;
+	unsigned int div3_en;
 	u32 rate;
 	unsigned int fbksel;
 
@@ -1972,44 +1972,30 @@ static int mtk_mipi_tx_pll_dphy_config_mt6985(struct mtk_mipi_tx *mipi_tx)
 	if (rate >= 6000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 3000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 1500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 750) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 510) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else {
 		DDPPR_ERR("data rate is too low\n");
@@ -2230,8 +2216,8 @@ static void mtk_mipi_tx_pll_dphy_deconfig_mt6985(struct mtk_mipi_tx *mipi_tx)
 
 static int mtk_mipi_tx_pll_cphy_config_mt6985(struct mtk_mipi_tx *mipi_tx)
 {
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
-	unsigned int div3, div3_en;
+	unsigned int txdiv, txdiv0, tmp;
+	unsigned int div3_en;
 	u32 rate;
 	unsigned int fbksel;
 
@@ -2244,50 +2230,34 @@ static int mtk_mipi_tx_pll_cphy_config_mt6985(struct mtk_mipi_tx *mipi_tx)
 	if (rate >= 6000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 3000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 1500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 750) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 450) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else {
 		DDPPR_ERR("data rate is too low\n");
@@ -2771,7 +2741,7 @@ unsigned int _dsi_get_pcw(unsigned long data_rate,
 static int mtk_mipi_tx_pll_prepare_mt6779(struct clk_hw *hw)
 {
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, txdiv0, tmp;
 	u64 pcw;
 
 	DDPINFO("%s+\n", __func__);
@@ -2786,23 +2756,18 @@ static int mtk_mipi_tx_pll_prepare_mt6779(struct clk_hw *hw)
 	if (mipi_tx->data_rate >= 2000000000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (mipi_tx->data_rate >= 1000000000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (mipi_tx->data_rate >= 500000000) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (mipi_tx->data_rate > 250000000) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (mipi_tx->data_rate >= 125000000) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
 	} else {
 		return -EINVAL;
 	}
@@ -2865,7 +2830,7 @@ static int mtk_mipi_tx_pll_prepare_mt6779(struct clk_hw *hw)
 static int mtk_mipi_tx_pll_prepare_mt6885(struct clk_hw *hw)
 {
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, txdiv0, tmp;
 	u32 rate;
 
 	DDPDBG("%s+\n", __func__);
@@ -2883,23 +2848,18 @@ static int mtk_mipi_tx_pll_prepare_mt6885(struct clk_hw *hw)
 	if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate > 250) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 125) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
 	} else {
 		return -EINVAL;
 	}
@@ -2954,8 +2914,8 @@ static int mtk_mipi_tx_pll_prepare_mt6886(struct clk_hw *hw)
 {
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
-	unsigned int div3, div3_en;
+	unsigned int txdiv, txdiv0, tmp;
+	unsigned int div3_en;
 	u32 rate;
 	unsigned int fbksel;
 
@@ -2974,56 +2934,38 @@ static int mtk_mipi_tx_pll_prepare_mt6886(struct clk_hw *hw)
 	if (rate >= 6000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 3000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 1500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 750) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 375) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 250) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else {
 		DDPPR_ERR("data rate is too low\n");
@@ -3096,8 +3038,8 @@ static int mtk_mipi_tx_pll_prepare_mt6983(struct clk_hw *hw)
 {
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
-	unsigned int div3, div3_en;
+	unsigned int txdiv, txdiv0, tmp;
+	unsigned int div3_en;
 	u32 rate;
 	unsigned int fbksel;
 
@@ -3116,44 +3058,30 @@ static int mtk_mipi_tx_pll_prepare_mt6983(struct clk_hw *hw)
 	if (rate >= 6000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 3000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 1500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 750) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 510) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else {
 		DDPPR_ERR("data rate is too low\n");
@@ -3418,7 +3346,7 @@ static int mtk_mipi_tx_pll_prepare_mt6897(struct clk_hw *hw)
 static int mtk_mipi_tx_pll_cphy_prepare_mt6885(struct clk_hw *hw)
 {
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, txdiv0, tmp;
 	u32 rate;
 
 	DDPDBG("%s+\n", __func__);
@@ -3436,23 +3364,18 @@ static int mtk_mipi_tx_pll_cphy_prepare_mt6885(struct clk_hw *hw)
 	if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate > 250) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 125) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
 	} else {
 		return -EINVAL;
 	}
@@ -3503,8 +3426,8 @@ static int mtk_mipi_tx_pll_cphy_prepare_mt6886(struct clk_hw *hw)
 {
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
-	unsigned int div3, div3_en;
+	unsigned int txdiv, txdiv0, tmp;
+	unsigned int div3_en;
 	u32 rate;
 	unsigned int fbksel;
 
@@ -3523,50 +3446,34 @@ static int mtk_mipi_tx_pll_cphy_prepare_mt6886(struct clk_hw *hw)
 	if (rate >= 6000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 3000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 1500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 750) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 450) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else {
 		DDPPR_ERR("data rate is too low\n");
@@ -3634,8 +3541,8 @@ static int mtk_mipi_tx_pll_cphy_prepare_mt6983(struct clk_hw *hw)
 {
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
-	unsigned int div3, div3_en;
+	unsigned int txdiv, txdiv0, tmp;
+	unsigned int div3_en;
 	u32 rate;
 	unsigned int fbksel;
 
@@ -3654,50 +3561,34 @@ static int mtk_mipi_tx_pll_cphy_prepare_mt6983(struct clk_hw *hw)
 	if (rate >= 6000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 3000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 1500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 750) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
-		div3 = 3;
 		div3_en = 1;
 	} else if (rate >= 450) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
-		div3 = 1;
 		div3_en = 0;
 	} else {
 		DDPPR_ERR("data rate is too low\n");
@@ -3850,7 +3741,7 @@ static int mtk_mipi_tx_pll_cphy_prepare_mt6897(struct clk_hw *hw)
 static int mtk_mipi_tx_pll_prepare_mt6873(struct clk_hw *hw)
 {
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, txdiv0, tmp;
 	u32 rate;
 
 	DDPDBG("%s+\n", __func__);
@@ -3868,23 +3759,18 @@ static int mtk_mipi_tx_pll_prepare_mt6873(struct clk_hw *hw)
 	if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate > 250) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 125) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
 	} else {
 		return -EINVAL;
 	}
@@ -3945,7 +3831,7 @@ static int mtk_mipi_tx_pll_prepare_mt6873(struct clk_hw *hw)
 static int mtk_mipi_tx_pll_cphy_prepare_mt6873(struct clk_hw *hw)
 {
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, txdiv0, tmp;
 	u32 rate;
 
 	DDPDBG("%s+\n", __func__);
@@ -3963,23 +3849,18 @@ static int mtk_mipi_tx_pll_cphy_prepare_mt6873(struct clk_hw *hw)
 	if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate > 250) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 125) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
 	} else {
 		return -EINVAL;
 	}
@@ -4028,7 +3909,7 @@ static int mtk_mipi_tx_pll_cphy_prepare_mt6873(struct clk_hw *hw)
 static int mtk_mipi_tx_pll_prepare_mt6853(struct clk_hw *hw)
 {
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, txdiv0, tmp;
 	u32 rate;
 
 	DDPDBG("%s+\n", __func__);
@@ -4046,23 +3927,18 @@ static int mtk_mipi_tx_pll_prepare_mt6853(struct clk_hw *hw)
 	if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate > 250) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 125) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
 	} else {
 		return -EINVAL;
 	}
@@ -4116,7 +3992,7 @@ static int mtk_mipi_tx_pll_prepare_mt6853(struct clk_hw *hw)
 static int mtk_mipi_tx_pll_prepare_mt6833(struct clk_hw *hw)
 {
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, txdiv0, tmp;
 	u32 rate;
 
 	DDPDBG("%s+\n", __func__);
@@ -4134,23 +4010,18 @@ static int mtk_mipi_tx_pll_prepare_mt6833(struct clk_hw *hw)
 	if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate > 250) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 125) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
 	} else {
 		return -EINVAL;
 	}
@@ -4204,7 +4075,7 @@ static int mtk_mipi_tx_pll_prepare_mt6879(struct clk_hw *hw)
 {
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, txdiv0, tmp;
 	u32 rate;
 
 	DDPDBG("%s+\n", __func__);
@@ -4222,23 +4093,18 @@ static int mtk_mipi_tx_pll_prepare_mt6879(struct clk_hw *hw)
 	if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate > 250) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 125) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
 	} else {
 		return -EINVAL;
 	}
@@ -4293,7 +4159,7 @@ static int mtk_mipi_tx_pll_cphy_prepare_mt6879(struct clk_hw *hw)
 {
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, txdiv0, tmp;
 	u32 rate;
 
 	DDPDBG("%s+\n", __func__);
@@ -4311,23 +4177,18 @@ static int mtk_mipi_tx_pll_cphy_prepare_mt6879(struct clk_hw *hw)
 	if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate > 250) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 125) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
 	} else {
 		return -EINVAL;
 	}
@@ -4379,7 +4240,7 @@ static int mtk_mipi_tx_pll_prepare_mt6855(struct clk_hw *hw)
 {
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, txdiv0, tmp;
 	u32 rate;
 
 	DDPDBG("%s+\n", __func__);
@@ -4397,23 +4258,18 @@ static int mtk_mipi_tx_pll_prepare_mt6855(struct clk_hw *hw)
 	if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate > 250) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 125) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
 	} else {
 		return -EINVAL;
 	}
@@ -4468,7 +4324,7 @@ static int mtk_mipi_tx_pll_cphy_prepare_mt6855(struct clk_hw *hw)
 {
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	struct mtk_mipi_tx *mipi_tx = mtk_mipi_tx_from_clk_hw(hw);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, txdiv0, tmp;
 	u32 rate;
 
 	DDPDBG("%s+\n", __func__);
@@ -4486,23 +4342,18 @@ static int mtk_mipi_tx_pll_cphy_prepare_mt6855(struct clk_hw *hw)
 	if (rate >= 2000) {
 		txdiv = 1;
 		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
 		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
 		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate > 250) {
 		txdiv = 8;
 		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 125) {
 		txdiv = 16;
 		txdiv0 = 4;
-		txdiv1 = 0;
 	} else {
 		return -EINVAL;
 	}
@@ -5289,7 +5140,7 @@ void mtk_mipi_tx_pll_rate_switch_gce(struct phy *phy,
 		void *handle, unsigned long rate)
 {
 	struct mtk_mipi_tx *mipi_tx = phy_get_drvdata(phy);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, tmp;
 	u32 reg_val;
 
 	DDPINFO("%s+ %lu\n", __func__, rate);
@@ -5300,24 +5151,14 @@ void mtk_mipi_tx_pll_rate_switch_gce(struct phy *phy,
 		/* parameter rate should be MHz */
 		if (rate >= 2000) {
 			txdiv = 1;
-			txdiv0 = 0;
-			txdiv1 = 0;
 		} else if (rate >= 1000) {
 			txdiv = 2;
-			txdiv0 = 1;
-			txdiv1 = 0;
 		} else if (rate >= 500) {
 			txdiv = 4;
-			txdiv0 = 2;
-			txdiv1 = 0;
 		} else if (rate > 250) {
 			txdiv = 8;
-			txdiv0 = 3;
-			txdiv1 = 0;
 		} else if (rate >= 125) {
 			txdiv = 16;
-			txdiv0 = 4;
-			txdiv1 = 0;
 		} else {
 			return;
 		}
@@ -5351,7 +5192,7 @@ void mtk_mipi_tx_pll_rate_switch_gce_mt6886(struct phy *phy,
 		void *handle, unsigned long rate)
 {
 	struct mtk_mipi_tx *mipi_tx = phy_get_drvdata(phy);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, tmp;
 	u32 reg_val;
 	unsigned int fbksel;
 
@@ -5360,40 +5201,22 @@ void mtk_mipi_tx_pll_rate_switch_gce_mt6886(struct phy *phy,
 	/* parameter rate should be MHz */
 	if (rate >= 6000) {
 		txdiv = 1;
-		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 3000) {
 		txdiv = 2;
-		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 2000) {
 		txdiv = 1;
-		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1500) {
 		txdiv = 4;
-		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
-		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 750) {
 		txdiv = 8;
-		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
-		txdiv0 = 2;
-		txdiv1 = 0;
 	}  else if (rate >= 375) {
 		txdiv = 16;
-		txdiv0 = 4;
-		txdiv1 = 0;
 	} else if (rate >= 250) {
 		txdiv = 8;
-		txdiv0 = 3;
-		txdiv1 = 0;
 	} else {
 		return;
 	}
@@ -5430,7 +5253,7 @@ void mtk_mipi_tx_pll_rate_switch_gce_mt6983(struct phy *phy,
 		void *handle, unsigned long rate)
 {
 	struct mtk_mipi_tx *mipi_tx = phy_get_drvdata(phy);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, tmp;
 	u32 reg_val;
 
 	DDPINFO("%s+ %lu\n", __func__, rate);
@@ -5438,32 +5261,18 @@ void mtk_mipi_tx_pll_rate_switch_gce_mt6983(struct phy *phy,
 	/* parameter rate should be MHz */
 	if (rate >= 6000) {
 		txdiv = 1;
-		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 3000) {
 		txdiv = 2;
-		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 2000) {
 		txdiv = 1;
-		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1500) {
 		txdiv = 4;
-		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
-		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 750) {
 		txdiv = 8;
-		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 510) {
 		txdiv = 4;
-		txdiv0 = 2;
-		txdiv1 = 0;
 	} else {
 		return;
 	}
@@ -5496,7 +5305,7 @@ void mtk_mipi_tx_pll_rate_switch_gce_N4(struct phy *phy,
 		void *handle, unsigned long rate)
 {
 	struct mtk_mipi_tx *mipi_tx = phy_get_drvdata(phy);
-	unsigned int txdiv, txdiv0, tmp;
+	unsigned int txdiv, tmp;
 	u32 reg_val;
 
 	DDPINFO("%s+ %lu\n", __func__, rate);
@@ -5504,19 +5313,14 @@ void mtk_mipi_tx_pll_rate_switch_gce_N4(struct phy *phy,
 	/* parameter rate should be MHz */
 	if (rate >= 2000) {
 		txdiv = 1;
-		txdiv0 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
-		txdiv0 = 1;
 	} else if (rate >= 500) {
 		txdiv = 4;
-		txdiv0 = 2;
 	} else if (rate > 250) {
 		txdiv = 8;
-		txdiv0 = 3;
 	} else if (rate >= 125) {
 		txdiv = 16;
-		txdiv0 = 4;
 	} else {
 		return;
 	}
@@ -5549,7 +5353,7 @@ void mtk_mipi_tx_pll_rate_khz_switch_gce_N4(struct phy *phy,
 		void *handle, unsigned long rate)
 {
 	struct mtk_mipi_tx *mipi_tx = phy_get_drvdata(phy);
-	unsigned int txdiv, txdiv0, tmp;
+	unsigned int txdiv, tmp;
 	u32 reg_val;
 
 	DDPINFO("%s+ %lu\n", __func__, rate);
@@ -5557,19 +5361,14 @@ void mtk_mipi_tx_pll_rate_khz_switch_gce_N4(struct phy *phy,
 	/* parameter rate should be MHz */
 	if (rate >= 2000000) {
 		txdiv = 1;
-		txdiv0 = 0;
 	} else if (rate >= 1000000) {
 		txdiv = 2;
-		txdiv0 = 1;
 	} else if (rate >= 500000) {
 		txdiv = 4;
-		txdiv0 = 2;
 	} else if (rate > 250000) {
 		txdiv = 8;
-		txdiv0 = 3;
 	} else if (rate >= 125000) {
 		txdiv = 16;
-		txdiv0 = 4;
 	} else {
 		return;
 	}
@@ -5607,7 +5406,7 @@ void mtk_mipi_tx_pll_rate_switch_cphy_gce_mt6983(struct phy *phy,
 		void *handle, unsigned long rate)
 {
 	struct mtk_mipi_tx *mipi_tx = phy_get_drvdata(phy);
-	unsigned int txdiv, txdiv0, txdiv1, tmp;
+	unsigned int txdiv, tmp;
 	u32 reg_val;
 
 	DDPINFO("%s+ %lu\n", __func__, rate);
@@ -5615,36 +5414,20 @@ void mtk_mipi_tx_pll_rate_switch_cphy_gce_mt6983(struct phy *phy,
 	/* parameter rate should be MHz */
 	if (rate >= 6000) {
 		txdiv = 1;
-		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 3000) {
 		txdiv = 2;
-		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 2000) {
 		txdiv = 1;
-		txdiv0 = 0;
-		txdiv1 = 0;
 	} else if (rate >= 1500) {
 		txdiv = 4;
-		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate >= 1000) {
 		txdiv = 2;
-		txdiv0 = 1;
-		txdiv1 = 0;
 	} else if (rate >= 750) {
 		txdiv = 8;
-		txdiv0 = 3;
-		txdiv1 = 0;
 	} else if (rate >= 500) {
 		txdiv = 4;
-		txdiv0 = 2;
-		txdiv1 = 0;
 	} else if (rate >= 450) {
 		txdiv = 16;
-		txdiv0 = 4;
-		txdiv1 = 0;
 	} else {
 		return;
 	}
