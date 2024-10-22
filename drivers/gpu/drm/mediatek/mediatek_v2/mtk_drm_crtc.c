@@ -5859,11 +5859,22 @@ static void mtk_crtc_frame_buffer_release(struct drm_crtc *crtc,
 #ifndef CONFIG_MTK_DISP_NO_LK
 	struct drm_device *dev = NULL;
 	struct mtk_drm_crtc *mtk_crtc = NULL;
+	struct mtk_drm_private *priv = crtc->dev->dev_private;
+
+	mtk_crtc = to_mtk_crtc(crtc);
+	if (!priv || !priv->data) {
+		DDPPR_ERR("priv or priv->data is null\n");
+		return;
+	}
+	if (priv->data->mmsys_id == MMSYS_MT6878){
+		DDPINFO("To do workaround:%s():%d\n", __func__, __LINE__);
+		return ;
+	}
 
 	if (disp_helper_get_stage() == DISP_HELPER_STAGE_NORMAL) {
 		if (already_free == true || IS_ERR_OR_NULL(crtc))
 			return;
-		mtk_crtc = to_mtk_crtc(crtc);
+
 
 		if (index == 0 && hrt_valid == true && mtk_crtc->is_plane0_updated == true) {
 			/*free fb buf after the 1st valid input buffer is unused*/
