@@ -3292,11 +3292,11 @@ void _mtk_crtc_wb_addon_module_disconnect(
 			addon_module->module == DISP_WDMA1_v3)) {
 			if (mtk_crtc->is_dual_pipe) {
 				/* disconnect left pipe */
-				if (wb_l_w > 0 && scn == WDMA_WRITE_BACK)
+				if (wb_l_w > 0)
 					mtk_addon_disconnect_after(crtc, ddp_mode, addon_module,
 							  &addon_config, cmdq_handle);
 				/* disconnect right pipe */
-				if (wb_r_w > 0 && scn == WDMA_WRITE_BACK) {
+				if (wb_r_w > 0) {
 					addon_module = &addon_data_dual->module_data[i];
 					mtk_addon_disconnect_after(crtc, ddp_mode, addon_module,
 							  &addon_config, cmdq_handle);
@@ -3738,7 +3738,7 @@ _mtk_crtc_wb_addon_module_connect(
 				}
 				wb_l_w = dst_roi_l.width;
 				wb_r_w = dst_roi_r.width;
-				if (dst_roi_l.width > 0 && scn == WDMA_WRITE_BACK) {
+				if (dst_roi_l.width > 0) {
 					addon_config.addon_wdma_config.wdma_src_roi = src_roi_l;
 					addon_config.addon_wdma_config.wdma_dst_roi = dst_roi_l;
 
@@ -3746,7 +3746,7 @@ _mtk_crtc_wb_addon_module_connect(
 					mtk_addon_connect_after(crtc, ddp_mode, addon_module,
 							  &addon_config, cmdq_handle);
 				}
-				if (dst_roi_r.width > 0 && scn == WDMA_WRITE_BACK) {
+				if (dst_roi_r.width > 0) {
 					addon_module = &addon_data_dual->module_data[i];
 					addon_config.addon_wdma_config.wdma_src_roi = src_roi_r;
 					addon_config.addon_wdma_config.wdma_dst_roi = dst_roi_r;
