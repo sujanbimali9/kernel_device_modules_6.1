@@ -473,6 +473,7 @@ struct mtk_mmc_compatible {
 	struct stop_clock_type stop_clk_set;
 	struct msdc_infra_check infra_check;
 	struct msdc_clock_set clock_set;
+	bool sw_infra_check;
 	bool enhance_rx;
 	bool support_64g;
 	bool use_internal_cd;

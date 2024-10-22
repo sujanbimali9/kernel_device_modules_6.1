@@ -462,6 +462,7 @@ static const struct mtk_mmc_compatible mt6878_compat = {
 	.set_crypto_enable_in_sw = true,
 	.need_power_voter = true,
 	.hs400_free_run = true,
+	.sw_infra_check = true,
 };
 
 static const struct of_device_id msdc_of_ids[] = {
@@ -3074,6 +3075,8 @@ static void msdc_hs400_enhanced_strobe(struct mmc_host *mmc,
 #define MMC_MTK_SIP_INFRA_REQ_RELEASE	BIT(3)
 #define MMC_MTK_SIP_POWER_VOTER_REQ	BIT(4)
 #define MMC_MTK_SIP_POWER_VOTER_RELEASE	BIT(5)
+#define MMC_MTK_SIP_SW_INFRA_REQ	BIT(6)
+#define MMC_MTK_SIP_SW_INFRA_RELEASE	BIT(7)
 
 /* SMC call wapper function */
 #define mmc_mtk_crypto_ctrl(smcc_res) \
@@ -3095,6 +3098,14 @@ static void msdc_hs400_enhanced_strobe(struct mmc_host *mmc,
 #define mmc_mtk_power_vote_release(smcc_res) \
 	arm_smccc_smc(MTK_SIP_MMC_CONTROL, \
 		MMC_MTK_SIP_POWER_VOTER_RELEASE, 0, 0, 0, 0, 0, 0, &smcc_res)
+
+#define mmc_mtk_sw_infra_req(smcc_res, id) \
+	arm_smccc_smc(MTK_SIP_MMC_CONTROL, \
+		MMC_MTK_SIP_SW_INFRA_REQ, id, 0, 0, 0, 0, 0, &smcc_res)
+
+#define mmc_mtk_sw_infra_release(smcc_res, id) \
+	arm_smccc_smc(MTK_SIP_MMC_CONTROL, \
+		MMC_MTK_SIP_SW_INFRA_RELEASE, id, 0, 0, 0, 0, 0, &smcc_res)
 
 
 static void mmc_mtk_crypto_enable(struct mmc_host *mmc)
@@ -3355,6 +3366,34 @@ static int msdc_of_clock_parse(struct platform_device *pdev,
 	return 0;
 }
 #endif
+
+static int mmc_sw_infra_req(struct msdc_host *host)
+{
+	struct arm_smccc_res res;
+
+	mmc_mtk_sw_infra_req(res, host->id);
+	if (res.a0) {
+		pr_info("%s: sw infra request fail, err: %lu\n",
+			 __func__, res.a0);
+		return 1;
+	}
+
+	return 0;
+}
+
+static int mmc_sw_infra_release(struct msdc_host *host)
+{
+	struct arm_smccc_res res;
+
+	mmc_mtk_sw_infra_release(res, host->id);
+	if (res.a0) {
+		pr_info("%s: sw infra request release fail, err: %lu\n",
+			 __func__, res.a0);
+		return 1;
+	}
+
+	return 0;
+}
 
 void msdc_sd_power_off(struct msdc_host *host)
 {
@@ -3843,6 +3882,7 @@ static int __maybe_unused msdc_runtime_suspend(struct device *dev)
 {
 	struct mmc_host *mmc = dev_get_drvdata(dev);
 	struct msdc_host *host = mmc_priv(mmc);
+	int ret;
 
 	sdr_clr_bits(host->base + SDC_CFG, SDC_CFG_SDIOIDE);
 	if (host->sdio_irq_cnt == 0 && host->id == MSDC_SDIO) {
@@ -3851,11 +3891,23 @@ static int __maybe_unused msdc_runtime_suspend(struct device *dev)
 		host->sdio_irq_cnt++;
 	}
 
+	if (mmc->caps2 & MMC_CAP2_CQE) {
+		ret = cqhci_suspend(mmc);
+		if (ret)
+			pr_info("cqhci suspend fail, ret = %d\n", ret);
+	}
+
 	msdc_save_reg(host);
 	msdc_gate_clock(host);
 
 	if(host->dev_comp->need_power_voter && host->id == MSDC_EMMC)
 		msdc_power_voter_release(host);
+
+	if (host->dev_comp->sw_infra_check) {
+		ret = mmc_sw_infra_release(host);
+		if (ret)
+			pr_info("mmc%d sw infra release fail\n", host->id);
+	}
 
 	/* release spm request to avoid infra can not keep off */
 	if (host->dev_comp->infra_check.enable)
@@ -3890,6 +3942,13 @@ static int __maybe_unused msdc_runtime_resume(struct device *dev)
 	 * ensure infra keep on during msdc ip work.
 	 * sw flow: send spm request -> ungating cg -> polling infra ack -> ip work
 	 */
+
+	if (host->dev_comp->sw_infra_check) {
+		ret = mmc_sw_infra_req(host);
+		if (ret)
+			pr_info("mmc%d sw infra req fail\n", host->id);
+	}
+
 	if (host->dev_comp->infra_check.enable) {
 		ret = infra_req_ack_check(host);
 		if (ret)
