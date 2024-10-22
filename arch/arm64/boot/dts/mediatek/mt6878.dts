@@ -12123,6 +12123,7 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 				      <&mt6375_auxadc MT6375_AUXADC_BATSNS_DBG>;
 			io-channel-names = "chg_vbat", "auxadc_vbat";
 			charger = <&mt6375_chg>;
+			gauge = <&mtk_gauge>;
 			isink-load-supply = <&mt6363_isink_load>;
 			imix-r {
 				val = <90>;

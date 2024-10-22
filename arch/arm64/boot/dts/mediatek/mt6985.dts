@@ -16758,6 +16758,7 @@ FLL0_out,FLL1_out,FLL2_out,FLL4_out,FLL5_out,FLL6_out";
 					  <&mt6375_auxadc MT6375_AUXADC_BATSNS_DBG>;
 			io-channel-names = "chg_vbat", "auxadc_vbat";
 			charger = <&mt6375_chg>;
+			gauge = <&mtk_gauge>;
 			isink_load-supply = <&mt6363_isink_load>;
 			imix_r {
 				val = <90>;
