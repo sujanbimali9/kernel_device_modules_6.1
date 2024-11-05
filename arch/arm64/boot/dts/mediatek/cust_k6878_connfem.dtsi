@@ -4,22 +4,6 @@
  */
 &connfem {
 	epa-elna-mtk {
-		parts = <&rtc7620 &nofem>;	/* [0]Richwave eFEM - Closed-Loop */
-
-		wifi {
-			flags-0 {
-				/* open-loop; */
-			};
-		};
-
-		bt {
-			flags-0 {
-				/* choose one of: epa-elna / epa / elna / bypass */
-				epa-elna;
-			};
-		};
-
-#if 0
 		parts = <&nofem &nofem>,		/* [0]iPA/iLNA MT6631 */
 			<&nofem &nofem>,		/* [1]iPA/iLNA MT6631/MT6686 */
 			<&nofem &nofem>,		/* [2]iPA/iLNA MT6637 */
@@ -106,6 +90,5 @@
 				epa-elna;
 			};
 		};
-#endif
 	};
 };
