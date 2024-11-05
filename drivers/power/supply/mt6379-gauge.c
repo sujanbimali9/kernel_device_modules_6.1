@@ -3591,8 +3591,12 @@ static int mt6379_get_vbat_mon_rpt(struct mt6379_priv *priv, int *vbat)
 		power_supply_put(psy);
 	} else {
 		ret = iio_read_channel_processed(priv->adcs[CHAN_ADC_VBATMON], vbat);
-		if (ret)
-			dev_info(priv->dev, "Failed to get chg_adc VBAT_MON data\n");
+		if (ret) {
+			*vbat = 0;
+			dev_info(priv->dev, "%s, Failed to get chg_adc VBAT_MON data\n", __func__);
+		}
+
+		*vbat /= 1000;
 	}
 
 	return ret;
