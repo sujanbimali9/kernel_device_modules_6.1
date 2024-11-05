@@ -29,6 +29,7 @@ mgk_64_k61_kleaf_modules = [
     "//vendor/mediatek/kernel_modules/connectivity/gps/data_link/plat/v051:gps_drv_dl_v051",
     "//vendor/mediatek/kernel_modules/connectivity/gps/data_link/plat/v060:gps_drv_dl_v060",
     "//vendor/mediatek/kernel_modules/connectivity/gps/data_link/plat/v061:gps_drv_dl_v061",
+    "//vendor/mediatek/kernel_modules/connectivity/gps/data_link/plat/v061_mt6653:gps_drv_dl_v061_mt6653",
     "//vendor/mediatek/kernel_modules/connectivity/gps/gps_pwr:gps_pwr",
     "//vendor/mediatek/kernel_modules/connectivity/gps/gps_scp:gps_scp",
     "//vendor/mediatek/kernel_modules/connectivity/gps/gps_stp:gps_drv_stp",
