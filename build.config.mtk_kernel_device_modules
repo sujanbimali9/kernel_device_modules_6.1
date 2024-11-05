@@ -30,6 +30,7 @@ kernel_device_modules-6.1
 ../vendor/mediatek/kernel_modules/gpu
 ../vendor/mediatek/kernel_modules/connectivity/fmradio
 ../vendor/mediatek/kernel_modules/connectivity/wlan/adaptor
+../vendor/mediatek/kernel_modules/connectivity/wlan/adaptor_mt6653
 ../vendor/mediatek/kernel_modules/connectivity/wlan/adaptor/wlan_page_pool
 ../vendor/mediatek/kernel_modules/connectivity/bt/linux_v2
 ../vendor/mediatek/kernel_modules/connectivity/bt/linux_v2_mt6653
