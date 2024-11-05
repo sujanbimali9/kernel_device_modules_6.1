@@ -5866,7 +5866,7 @@ static void mtk_crtc_frame_buffer_release(struct drm_crtc *crtc,
 		DDPPR_ERR("priv or priv->data is null\n");
 		return;
 	}
-	if (priv->data->mmsys_id == MMSYS_MT6878){
+	if (priv->data->mmsys_id == MMSYS_MT6878 && priv->is_dual_disp){
 		DDPINFO("To do workaround:%s():%d\n", __func__, __LINE__);
 		return ;
 	}
