@@ -10,7 +10,8 @@
 			"sky85320-sky85720",	/* pinctrl-2 */
 			"mxd7751s-mxd7751s",	/* pinctrl-3 */
 			"nofem-sky85732",	/* pinctrl-4 */
-			"nofem-qm45197";	/* pinctrl-5 */
+			"nofem-qm45197",	/* pinctrl-5 */
+			"rtc7620-nofem";	/* pinctrl-6 */
 
 	pinctrl-0 = <&wlan7207h_wf0>, <&wlan7207h_wf1>,
 		<&wlan7207c_wf0>, <&wlan7207c_wf1>;
@@ -25,6 +26,8 @@
 	pinctrl-4 = <&sky85732_wf0>;
 
 	pinctrl-5 = <&qm45197_wf0>, <&qm45197_wf1>;
+
+	pinctrl-6 = <&rtc7620_wf0>;
 
 	/* FEM ID */
 	nofem: nofem {
@@ -66,6 +69,11 @@
 	sky85732: sky85732 {
 		vid = <1>;
 		pid = <3>;
+	};
+
+	rtc7620: rtc7620 {
+		vid = <6>;
+		pid = <1>;
 	};
 };
 
@@ -212,6 +220,17 @@
 				<PINMUX_GPIO38__FUNC_ANT_SEL5>;
 			mapping = <4 0x47 0>,	/* ANTSEL 4 <-> PIN #7: PAEN5 */
 				<5 0x49 0>;	/* ANTSEL 5 <-> PIN #9: LNAEN5 */
+		};
+	};
+
+	rtc7620_wf0: rtc7620-wf0 {
+		pins-cmd-dat {
+			pinmux = <PINMUX_GPIO33__FUNC_ANT_SEL0>,
+				<PINMUX_GPIO34__FUNC_ANT_SEL1>,
+				<PINMUX_GPIO35__FUNC_ANT_SEL2>;
+			mapping = <0 6 0>,	/* ANTSEL 0 <-> PIN #6: LNAEN */
+				<1 11 0>,	/* ANTSEL 1 <-> PIN #11: VRX */
+				<2 1 0>;	/* ANTSEL 2 <-> PIN #1: VTX */
 		};
 	};
 };
