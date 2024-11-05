@@ -2017,6 +2017,10 @@
 		emi-max-addr = <0xa0000000>; /* defined in consys */
 	};
 
+	connsys_emi_config: connsys-emi-config {
+		emi-config-support = <0>;
+	};
+
 	connv3: connv3 {
 		compatible = "mediatek,mt6989-connv3";
 		/* BT, WIFI, GPS, FM */
