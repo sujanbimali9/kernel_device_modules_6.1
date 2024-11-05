@@ -9190,6 +9190,16 @@
 					<&dvfsrc_freq_opp1>;
 		};
 
+		wifi_tx_cma: wifi-tx-cma {
+			compatible = "mediatek,wifi_tx_cma";
+			emi-size = <0x5400000>;
+		};
+
+		wifi_misc: wifi-misc {
+			compatible = "mediatek,wifi_misc";
+			emi-size = <0xa0000>;
+		};
+
 		wifi_page_pool: wifi-page-pool {
 			compatible = "mediatek,wifi_page_pool";
 			emi-size = <0x5400000>;
