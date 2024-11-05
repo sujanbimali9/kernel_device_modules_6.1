@@ -1127,7 +1127,7 @@ static int instant_current(struct mtk_gauge *gauge, int *val,
 			  __func__, latch_timeout_cnt);
 
 		ret = iio_read_channel_attribute(gauge->chan_ptim_bat_voltage,
-						 &vbat_p, &ibat_p, IIO_CHAN_INFO_PROCESSED);
+						 &vbat_p, &ibat_p, IIO_CHAN_INFO_RAW);
 		pr_notice("[%s] ptim vbat=%d, ibat=%d, ret=%d\n", __func__, vbat_p, ibat_p, ret);
 
 		ret = regmap_read(gauge->regmap, RG_FGADC_CON2, &rdata);

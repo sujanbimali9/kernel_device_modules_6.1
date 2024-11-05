@@ -1714,7 +1714,7 @@ static int instant_current(struct mtk_gauge *gauge, int *val, enum fg_cic_idx ci
 			 __func__, bat_idx + 1, cic_idx + 1, priv->latch_timeout_cnt);
 
 		ret = iio_read_channel_attribute(gauge->chan_ptim_bat_voltage,
-						 &vbat_p, &ibat_p, IIO_CHAN_INFO_PROCESSED);
+						 &vbat_p, &ibat_p, IIO_CHAN_INFO_RAW);
 		dev_notice(dev, "%s, BAT%d ptim vbat=%d, ibat=%d, ret=%d\n",
 			   __func__, bat_idx + 1, vbat_p, ibat_p, ret);
 
