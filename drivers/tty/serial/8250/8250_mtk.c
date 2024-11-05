@@ -923,6 +923,60 @@ void mtk8250_uart_end_record(struct tty_struct *tty)
 EXPORT_SYMBOL(mtk8250_uart_end_record);
 
 #if IS_ENABLED(CONFIG_MTK_UARTHUB)
+int mtk8250_uart_hub_get_bt_sleep_flow_hw_mech_en(void)
+{
+	return -1;
+}
+EXPORT_SYMBOL(mtk8250_uart_hub_get_bt_sleep_flow_hw_mech_en);
+
+int mtk8250_uart_hub_set_bt_sleep_flow_hw_mech_en(int enable)
+{
+	return -1;
+}
+EXPORT_SYMBOL(mtk8250_uart_hub_set_bt_sleep_flow_hw_mech_en);
+
+int mtk8250_uart_hub_get_host_awake_sta(int dev_index)
+{
+	return -1;
+}
+EXPORT_SYMBOL(mtk8250_uart_hub_get_host_awake_sta);
+
+int mtk8250_uart_hub_set_host_awake_sta(int dev_index)
+{
+	return -1;
+}
+EXPORT_SYMBOL(mtk8250_uart_hub_set_host_awake_sta);
+
+int mtk8250_uart_hub_clear_host_awake_sta(int dev_index)
+{
+	return -1;
+}
+EXPORT_SYMBOL(mtk8250_uart_hub_clear_host_awake_sta);
+
+int mtk8250_uart_hub_get_host_bt_awake_sta(int dev_index)
+{
+	return -1;
+}
+EXPORT_SYMBOL(mtk8250_uart_hub_get_host_bt_awake_sta);
+
+int mtk8250_uart_hub_get_cmm_bt_awake_sta(void)
+{
+	return -1;
+}
+EXPORT_SYMBOL(mtk8250_uart_hub_get_cmm_bt_awake_sta);
+
+int mtk8250_uart_hub_get_bt_awake_sta(void)
+{
+	return -1;
+}
+EXPORT_SYMBOL(mtk8250_uart_hub_get_bt_awake_sta);
+
+int mtk8250_uart_hub_bt_on_count_inc(void)
+{
+	return -1;
+}
+EXPORT_SYMBOL(mtk8250_uart_hub_bt_on_count_inc);
+
 int mtk8250_uart_hub_get_host_fw_own_status(void)
 {
 	#if defined(KERNEL_UARTHUB_get_host_set_fw_own_status)
