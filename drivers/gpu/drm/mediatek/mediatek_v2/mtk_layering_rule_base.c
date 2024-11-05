@@ -4204,6 +4204,11 @@ static void RPO_rule(struct mtk_drm_private *priv, struct drm_crtc *crtc,
 	for (i = 0; i < disp_info->layer_num[disp_idx]; i++) {
 		struct mtk_rsz_param param[2] = {0};
 
+		if (scale_cnt == 0) {
+			mtk_rect_make(&src_roi, 0, 0, 0, 0);
+			mtk_rect_make(&dst_roi, 0, 0, 0, 0);
+		}
+
 		c = &disp_info->input_config[disp_idx][i];
 
 		/*if (i == 0 && c->src_fmt == MTK_DRM_FORMAT_DIM)
