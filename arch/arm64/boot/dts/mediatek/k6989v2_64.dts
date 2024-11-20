@@ -963,7 +963,7 @@ bootargs_ext = "";
 	};
 };
 
-#include "mediatek/bat_setting/mt6992_battery_prop.dtsi"
+#include "mediatek/bat_setting/mt6989v2_battery_prop.dtsi"
 
 &mtk_ctd {
 	bc12-psy-port0 = <&mt6379_chg>;
