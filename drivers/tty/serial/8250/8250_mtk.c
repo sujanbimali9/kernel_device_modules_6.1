@@ -99,6 +99,7 @@
 #define TTY_BUF_POLLING_COUNT  10
 
 #define DMA_RX_POLLING_CNT	100
+#define UART_POLLING_RESUME_CNT  80
 
 #define FIFO_TX_STATUS_MASK  0x1F
 #define FIFO_TX_CNT_MASK 0x1F
@@ -108,6 +109,8 @@
 #define UART_DUMP_RECORE_NUM 10
 #define UART_DUMP_BUF_LEN PAGE_SIZE
 #define CONFIG_UART_DATA_RECORD
+
+#define UART_POLLING_FAIL 20
 
 #define UART_REG_READ(addr) \
 	(*((unsigned int *)(addr)))
@@ -124,6 +127,8 @@ enum dma_rx_status {
 	DMA_RX_SHUTDOWN = 2,
 };
 #endif
+
+typedef void (*UART_WAKEUP_CB)(void *);
 
 struct mtk8250_dump {
 	unsigned long long start_time;
@@ -177,6 +182,8 @@ struct mtk8250_data {
 	struct mtk8250_reg_data peri_wakeup_info;
 	void __iomem *peri_wakeup_ctl;
 	void __iomem *peri_wakeup_sta;
+	UART_WAKEUP_CB mtk8250_wakeup_cb;
+	void *wakeup_param;
 };
 
 struct mtk8250_comp {
@@ -214,6 +221,20 @@ static struct mtk8250_data *hub_uart_data;
 #ifndef CONFIG_FPGA_EARLY_PORTING
 static u64 wakeup_irq_time;
 #endif
+
+int mtk8250_wakeup_callback_register(UART_WAKEUP_CB wakeup_cb, void *wakeup_param)
+{
+	if(hub_uart_data == NULL) {
+		pr_info("[%s]: data is null!\n", __func__);
+		return -ENODEV;
+	}
+
+	hub_uart_data->mtk8250_wakeup_cb = wakeup_cb;
+	hub_uart_data->wakeup_param = wakeup_param;
+
+	return 0;
+}
+EXPORT_SYMBOL(mtk8250_wakeup_callback_register);
 
 #if IS_ENABLED(CONFIG_MTK_UARTHUB)
 static void mtk8250_clear_wakeup(void)
@@ -1007,6 +1028,29 @@ int mtk8250_uart_hub_get_host_wakeup_status(void)
 }
 EXPORT_SYMBOL(mtk8250_uart_hub_get_host_wakeup_status);
 
+static int mtk8250_uart_polling_resume_state(void)
+{
+	int polling_cnt = UART_POLLING_RESUME_CNT;
+
+	if(hub_uart_data == NULL) {
+		pr_info("[%s] polling fail: mtk8250_data is null!\n",__func__);
+		return -EFAULT;
+	}
+
+	while(polling_cnt) {
+		if(atomic_read(&hub_uart_data->uart_state) != MTK_UART_SUSPENDING)
+			break;
+
+		usleep_range(1000,1500);
+		polling_cnt--;
+	}
+	if(polling_cnt == 0) {
+		pr_info("[%s] polling resume state timeout,cnt:%d\n",__func__,polling_cnt);
+		return -UART_POLLING_FAIL;
+	}
+	return 0;
+}
+
 int mtk8250_uart_hub_dev0_set_tx_request(struct tty_struct *tty)
 {
 	#if defined(KERNEL_UARTHUB_dev0_set_tx_request)
@@ -1058,6 +1102,12 @@ int mtk8250_uart_hub_dev0_set_tx_request(struct tty_struct *tty)
 		ret = KERNEL_UARTHUB_dev0_set_tx_request();
 		if (ret) {
 			pr_info("[%s]dev0_set_tx_request error. ret is %d\n",
+				__func__, ret);
+			goto exit;
+		}
+		ret = mtk8250_uart_polling_resume_state();
+		if(ret) {
+			pr_info("[%s]uart poling resume state error. ret is %d\n",
 				__func__, ret);
 			goto exit;
 		}
@@ -2078,7 +2128,10 @@ static irqreturn_t wakeup_irq_handler_bottom_half(int irq, void *dev_id)
 	u64 wakeup_time_2 = 0;
 	u64 wakeup_time_3 = 0;
 	u64 wakeup_time_4 = 0;
-	int rx_state = 0;
+	u64 wakeup_time_5 = 0;
+	u64 wakeup_time_6 = 0;
+
+	int rx_state = 0,wakeup_cb_exists = 0;
 
 	pdev= (struct platform_device *)dev_id;
 	data = platform_get_drvdata(pdev);
@@ -2093,6 +2146,12 @@ static irqreturn_t wakeup_irq_handler_bottom_half(int irq, void *dev_id)
 	wakeup_time_1 = sched_clock();
 	mutex_lock(&data->clk_mutex);
 	if (atomic_read(&data->wakeup_state) == 0) {
+		wakeup_time_2 = sched_clock();
+		if(data->mtk8250_wakeup_cb != NULL) {
+			data->mtk8250_wakeup_cb(data->wakeup_param);
+			wakeup_cb_exists = 1;
+		}
+		wakeup_time_3 = sched_clock();
 		if (atomic_read(&data->uart_state) == MTK_UART_SUSPENDING) {
 			/*clear uart wakeup status and enable wakeup*/
 			mtk8250_set_wakeup_irq(hub_uart_data, true);
@@ -2115,9 +2174,9 @@ static irqreturn_t wakeup_irq_handler_bottom_half(int irq, void *dev_id)
 			#endif
 			/* make sure clock ready */
 			mb();
-			wakeup_time_2 = sched_clock();
+			wakeup_time_4 = sched_clock();
 			udelay(80);
-			wakeup_time_3 = sched_clock();
+			wakeup_time_5 = sched_clock();
 			#if defined(KERNEL_mtk_uart_apdma_enable_vff)
 			KERNEL_mtk_uart_apdma_enable_vff(true);
 			#endif
@@ -2132,10 +2191,14 @@ static irqreturn_t wakeup_irq_handler_bottom_half(int irq, void *dev_id)
 			}
 		#endif
 		atomic_set(&data->wakeup_state, 1);
-		wakeup_time_4 = sched_clock();
-		pr_info("[%s]: handler[%lld]ns, udelay[%lld], bottom_half[%lld], rx_state[%d]\n"
-			, __func__, wakeup_time_4 - wakeup_irq_time, wakeup_time_3 - wakeup_time_2,
-			 wakeup_time_4 - wakeup_time_1, rx_state);
+		wakeup_time_6 = sched_clock();
+		pr_info("[%s]: handler[%lld]ns, udelay[%lld], bottom_half[%lld], "
+			"wakeup_cb[%lld],wakeup_cb_exists[%d],rx_state[%d]\n",
+			__func__, wakeup_time_6 - wakeup_irq_time,
+			wakeup_time_5 - wakeup_time_4,
+			wakeup_time_6 - wakeup_time_1,
+			wakeup_time_3 - wakeup_time_2,
+			wakeup_cb_exists,rx_state);
 	}
 	mutex_unlock(&data->clk_mutex);
 	return IRQ_HANDLED;
