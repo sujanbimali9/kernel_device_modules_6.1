@@ -1136,7 +1136,7 @@ bootargs_ext = "";
 };
 
 #include <k6989v2_64/cust.dtsi>
-#include "mediatek/cust_k6992_connfem.dtsi"
+#include "mediatek/cust_k6989v2_connfem.dtsi"
 #include "mediatek/cust_mt6989_touch_1080x2400_mult.dtsi"
 #include "mediatek/cust_mt6989_camera_v4l2.dtsi"
 /*End of this file, DO NOT ADD ANYTHING HERE*/
