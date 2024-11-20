@@ -9183,6 +9183,7 @@
 			pinctrl-4 = <&wf_rst_pta_uart_off>;
 			conninfra-emi-addr = <0>;
 			conninfra-emi-size = <0xc00000>;
+			ppb-emi-offset = <0x015a07f0>;
 			#thermal-sensor-cells = <1>;
 			interconnects = <&dvfsrc MT6873_MASTER_MCUSYS &dvfsrc MT6873_SLAVE_DDR_EMI>;
 			interconnect-names = "wifi-perf-bw";
