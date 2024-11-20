@@ -35,7 +35,7 @@
 			 *	0: Phone
 			 *	1: EVB
 			 */
-			gpio = <&mt6373_pio 8 0x0>;
+			gpio = <&pio 210 0x0>;
 
 			/* HWID bit[3:1]
 			 *	3'b000: SKU1-1
