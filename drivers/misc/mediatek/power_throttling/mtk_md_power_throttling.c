@@ -43,23 +43,22 @@ static void md_pt_low_battery_cb(enum LOW_BATTERY_LEVEL_TAG level, void *data)
 	if (level > md_pt_info[LBAT_POWER_THROTTLING].max_lv)
 		return;
 
-	if (level <= LOW_BATTERY_LEVEL_3) {
-		if (level != LOW_BATTERY_LEVEL_0)
-			intensity = md_pt_info[LBAT_POWER_THROTTLING].reduce_tx[level-1];
-		else
-			intensity = 0;
-		md_throttle_cmd = TMC_CTRL_CMD_TX_POWER | level << 8 |
-			PT_LOW_BATTERY_VOLTAGE << 16 | intensity << 24;
-		ret = exec_ccci_kern_func(ID_THROTTLING_CFG,
-			(char *)&md_throttle_cmd, 4);
 
-		pr_notice("%s: send cmd to CCCI ret=%d, cmd=0x%x\n", __func__, ret,
-						md_throttle_cmd);
+	if (level != LOW_BATTERY_LEVEL_0)
+		intensity = md_pt_info[LBAT_POWER_THROTTLING].reduce_tx[level-1];
+	else
+		intensity = 0;
+	md_throttle_cmd = TMC_CTRL_CMD_TX_POWER | level << 8 |
+		PT_LOW_BATTERY_VOLTAGE << 16 | intensity << 24;
+	ret = exec_ccci_kern_func(ID_THROTTLING_CFG,
+		(char *)&md_throttle_cmd, 4);
 
-		if (ret)
-			pr_notice("%s: error, ret=%d, cmd=0x%x l=%d\n", __func__, ret,
-				md_throttle_cmd, level);
-	}
+	pr_notice("%s: send cmd to CCCI ret=%d, cmd=0x%x\n", __func__, ret,
+					md_throttle_cmd);
+
+	if (ret)
+		pr_notice("%s: error, ret=%d, cmd=0x%x l=%d\n", __func__, ret,
+			md_throttle_cmd, level);
 }
 
 static void md_lbat_dedicate_callback(unsigned int thd)
