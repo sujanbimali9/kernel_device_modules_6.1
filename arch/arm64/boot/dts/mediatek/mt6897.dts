@@ -14519,26 +14519,47 @@
 		compatible = "mediatek,low_battery_throttling";
 		lvsys-thd-enable = <1>;
 		vbat-thd-enable = <1>;
-		thd-volts-l = <
+		bat0-thd-volts-l = <
+			3550 3100 2900
 			3550 3100 2900
 			4400 3400 3100
 			5000 4900 4400>;
-		thd-volts-h = <
+		bat0-thd-volts-h = <
 			3600 3550 3100
-			5000 4400 3400
-			5100 5000 4900>;
-		thd-volts-l-2s = <
+			3600 3550 3100
+			4400 3400 3100
+			5000 4900 4400>;
+		bat1-thd-volts-l = <
+			3550 3100 2900
 			3550 3100 2900
 			4400 3400 3100
 			5000 4900 4400>;
-		thd-volts-h-2s = <
+		bat1-thd-volts-h = <
 			3600 3550 3100
-			5000 4400 3400
-			5100 5000 4900>;
+			3600 3550 3100
+			4400 3400 3100
+			5000 4900 4400>;
 		lvsys-thd-volt-l = <2900>;
 		lvsys-thd-volt-h = <3100>;
-		temperature-max-stage = <2>;
-		temperature-stage-threshold = <11 0>;
+		temperature-stage-threshold = <25 10 0>;
+
+		bat0-aging-threshold = <1000 2000>;
+		bat0-aging-volts-t0 =  <0 0>;
+		bat0-aging-volts-t1 =  <0 0>;
+		bat0-aging-volts-t2 =  <0 0>;
+		bat0-aging-volts-t3 =  <0 0>;
+		bat1-aging-threshold = <1000 2000>;
+		bat1-aging-volts-t0 =  <0 0>;
+		bat1-aging-volts-t1 =  <0 0>;
+		bat1-aging-volts-t2 =  <0 0>;
+		bat1-aging-volts-t3 =  <0 0>;
+
+		throttle-level = <0 1 2 3>,
+						<0 1 2 3>,
+						<0 1 2 3>,
+						<0 1 2 3>;
+		bootmode = <&chosen>;
+		gauge = <&mtk_gauge>;
 	};
 
 	pbm: pbm {
