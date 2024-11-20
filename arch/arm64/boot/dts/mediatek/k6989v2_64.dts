@@ -8,7 +8,7 @@
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/pinctrl/mt6989-pinfunc.h>
 #include <dt-bindings/phy/phy.h>
-#include "mediatek/mt6992_6653.dtsi"
+#include "mediatek/mt6989v2_connsys.dtsi"
 
 &chosen {
 bootargs_ext = "";
