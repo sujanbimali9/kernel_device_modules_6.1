@@ -542,6 +542,7 @@ mgk_64_k61_device_modules = [
     "drivers/power/supply/mtk_chg_type_det.ko",
     "drivers/power/supply/mtk_hvbpc.ko",
     "drivers/power/supply/mtk_pd_adapter.ko",
+    "drivers/power/supply/mtk_ufcs_adapter.ko",
     "drivers/power/supply/mtk_pd_charging.ko",
     "drivers/power/supply/mtk_pep.ko",
     "drivers/power/supply/mtk_pep20.ko",
