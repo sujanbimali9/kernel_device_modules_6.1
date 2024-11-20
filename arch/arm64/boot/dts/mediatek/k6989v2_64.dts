@@ -710,9 +710,9 @@ bootargs_ext = "";
 				ct = <0>;
 				part = <0>;
 				port@0 {
-					// fl_core_0: endpoint {
-					//	remote-endpoint = <&flashlight_0>;
-					// };
+					 fl_core_0: endpoint {
+						remote-endpoint = <&flashlight_0>;
+					 };
 				};
 			};
 			led@1 {
@@ -726,9 +726,9 @@ bootargs_ext = "";
 				ct = <1>;
 				part = <0>;
 				port@1 {
-					// fl_core_1: endpoint {
-					//	remote-endpoint = <&flashlight_1>;
-					// };
+					 fl_core_1: endpoint {
+						remote-endpoint = <&flashlight_1>;
+					 };
 				};
 			};
 			led@2 {
@@ -742,9 +742,9 @@ bootargs_ext = "";
 				ct = <2>;
 				part = <0>;
 				port@2 {
-					// fl_core_2: endpoint {
-					//	remote-endpoint = <&flashlight_2>;
-					// };
+					 fl_core_2: endpoint {
+						remote-endpoint = <&flashlight_2>;
+					 };
 				};
 			};
 		};
@@ -1138,5 +1138,5 @@ bootargs_ext = "";
 #include <k6989v2_64/cust.dtsi>
 #include "mediatek/cust_k6989v2_connfem.dtsi"
 #include "mediatek/cust_mt6989_touch_1080x2400_mult.dtsi"
-#include "mediatek/cust_mt6989_camera_v4l2.dtsi"
+#include "mediatek/cust_mt6989v2_camera_v4l2.dtsi"
 /*End of this file, DO NOT ADD ANYTHING HERE*/
