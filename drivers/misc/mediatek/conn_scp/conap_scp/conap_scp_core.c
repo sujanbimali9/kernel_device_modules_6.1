@@ -43,8 +43,8 @@ const struct of_device_id conn_scp_of_ids[] = {
 	#endif
 	},
 	{
-		.compatible = "mediatek,mt6992-conn_scp",
-	#if IS_ENABLED(CONFIG_MTK_COMBO_CHIP_CONSYS_6992)
+		.compatible = "mediatek,mt6989v2-conn_scp",
+	#if IS_ENABLED(CONFIG_MTK_COMBO_CHIP_CONSYS_6989)
 		.data = NULL,
 	#endif
 	},
