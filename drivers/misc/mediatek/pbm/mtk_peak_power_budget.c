@@ -372,13 +372,48 @@ static int soc_to_ocv(int soc, unsigned int table_idx)
 	return ret;
 }
 
+static int soc_to_rdc(int soc, unsigned int table_idx)
+{
+	struct fg_info_t *info_p = &fg_data.fg_info[table_idx];
+	struct ocv_table_t *table_p;
+	int dod, ret, i;
+	int high_dod, low_dod, high_rdc, low_rdc;
+
+	dod = 10000 - soc;
+	if (dod > 10000)
+		dod = 10000;
+	else if (dod < 0)
+		dod = 0;
+
+	for (i = 0; i < info_p->ocv_table_size; i++) {
+		table_p = &info_p->ocv_table[i];
+		if (table_p->dod >= dod)
+			break;
+	}
+
+	if (i == 0) {
+		ret = info_p->ocv_table[0].rdc;
+	} else if (i >= info_p->ocv_table_size) {
+		i = info_p->ocv_table_size - 1;
+		ret = info_p->ocv_table[i].rdc;
+	} else {
+		high_dod = info_p->ocv_table[i-1].dod;
+		low_dod = info_p->ocv_table[i].dod;
+		high_rdc = info_p->ocv_table[i-1].rdc;
+		low_rdc = info_p->ocv_table[i].rdc;
+		ret = interpolation(high_dod, high_rdc, low_dod, low_rdc, dod);
+	}
+
+	return ret;
+}
+
 void dump_ocv_table(unsigned int idx)
 {
 	int i, j, offset, cnt = 5;
 	char str[256];
 
 	if (mt_ppb_debug) {
-		pr_info("table[%d] temp=%d qmax=%d table_size=%d [idx, mah, vol, soc]\n", idx,
+		pr_info("table[%d] temp=%d qmax=%d table_size=%d [idx, mah, vol, soc, rdc]\n", idx,
 			fg_data.fg_info[idx].temp, fg_data.fg_info[idx].qmax,
 			fg_data.fg_info[idx].ocv_table_size);
 
@@ -389,10 +424,11 @@ void dump_ocv_table(unsigned int idx)
 				if (i*cnt+j >= fg_data.fg_info[idx].ocv_table_size)
 					break;
 
-				offset += snprintf(str + offset, 256 - offset, "(%3d %5d %5d %5d) ",
+				offset += snprintf(str + offset, 256 - offset, "(%3d %5d %5d %5d %5d) ",
 					i*cnt+j, fg_data.fg_info[idx].ocv_table[i*cnt+j].mah,
 					fg_data.fg_info[idx].ocv_table[i*cnt+j].voltage,
-					fg_data.fg_info[idx].ocv_table[i*cnt+j].dod);
+					fg_data.fg_info[idx].ocv_table[i*cnt+j].dod,
+					fg_data.fg_info[idx].ocv_table[i*cnt+j].rdc);
 			}
 			pr_info("%s\n", str);
 		}
@@ -461,6 +497,7 @@ void update_ocv_table(int temp, int qmax)
 		c_table_p = &c_info_p->ocv_table[i];
 
 		c_table_p->mah = interpolation(ht, h_table_p->mah, lt, l_table_p->mah, temp);
+		c_table_p->rdc = interpolation(ht, h_table_p->rdc, lt, l_table_p->rdc, temp);
 		c_table_p->voltage = interpolation(ht, h_table_p->voltage, lt, l_table_p->voltage,
 			temp);
 		if (qmax != 0) {
@@ -595,13 +632,14 @@ static void bat_handler(struct work_struct *work)
 	if (temp != last_temp || soc != last_soc) {
 		volt = soc_to_ocv(soc * 100, 0);
 		pb.ocv = volt / 10;
+		pb.cur_rdc = soc_to_rdc(soc * 100, 0) / 10 + pb.circuit_rdc;
 		sys_power = get_sys_power_budget(pb.ocv, pb.cur_rdc, pb.cur_rac, pb.ocp, pb.uvlo);
 		last_temp = temp;
 		last_soc = soc;
 		kicker_ppb_request_power(KR_BUDGET, sys_power);
 		if (mt_ppb_debug)
-			pr_info("%s: power=%d ocv=%d soc=%d Rdc,Rac=%d,%d temp,stage=%d,%d\n",
-				__func__, sys_power, pb.ocv, soc, pb.cur_rdc, pb.cur_rac, temp,
+			pr_info("%s: power=%d ocv=%d soc=%d Rdc,Rac,Rcircuit=%d,%d,%d temp,stage=%d,%d\n",
+				__func__, sys_power, pb.ocv, soc, pb.cur_rdc, pb.cur_rac, pb.circuit_rdc, temp,
 				pb.temp_cur_stage);
 	}
 }
@@ -684,7 +722,7 @@ static int read_mtk_gauge_dts(struct platform_device *pdev)
 			}
 		}
 
-		num = 3;
+		num = sizeof(struct ocv_table_t) / sizeof(unsigned int);
 		ret = snprintf(str, STR_SIZE, "battery%d-profile-t%d-col", fg_data.bat_type, i);
 		if (ret < 0) {
 			pr_info("%s:%d: snprintf error %d\n", __func__, __LINE__, ret);
@@ -707,6 +745,7 @@ static int read_mtk_gauge_dts(struct platform_device *pdev)
 			table_p = &info_p->ocv_table[j];
 			read_dts_val_by_idx(np, str, j*num, &table_p->mah, 1);
 			read_dts_val_by_idx(np, str, j*num+1, &table_p->voltage, 1);
+			read_dts_val_by_idx(np, str, j*num+2, &table_p->rdc, 1);
 			if (info_p->ocv_table[j].dod == 0 && info_p->qmax > 0)
 				info_p->ocv_table[j].dod = info_p->ocv_table[j].mah * 1000 /
 					info_p->qmax;
@@ -776,7 +815,7 @@ static int read_mtk_ppb_bat_dts(struct platform_device *pdev, struct device_node
 			}
 		}
 
-		num = 3;
+		num = sizeof(struct ocv_table_t) / sizeof(unsigned int);
 #ifdef DYNAMIC_ALLOC_PB_INFO
 		info_p->ocv_table = devm_kmalloc_array(&pdev->dev, info_p->ocv_table_size,
 			sizeof(struct ocv_table_t), GFP_KERNEL);
@@ -794,6 +833,7 @@ static int read_mtk_ppb_bat_dts(struct platform_device *pdev, struct device_node
 			read_dts_val_by_idx(np, str, j*num, &table_p->mah, 1);
 			read_dts_val_by_idx(np, str, j*num+1, &table_p->voltage, 1);
 			read_dts_val_by_idx(np, str, j*num+2, &table_p->dod, 1);
+			read_dts_val_by_idx(np, str, j*num+3, &table_p->rdc, 1);
 			if (info_p->ocv_table[j].dod == 0 && info_p->qmax > 0)
 				info_p->ocv_table[j].dod = info_p->ocv_table[j].mah * 1000 /
 					info_p->qmax;
@@ -833,6 +873,9 @@ static int read_power_budget_dts(struct platform_device *pdev)
 		of_property_read_u32_array(np, "temperature-threshold", &pb.temp_thd[0], num);
 
 	pb.temp_max_stage = num;
+
+	if (read_dts_val(np, "battery-circult-rdc", &pb.circuit_rdc, 1))
+		pb.circuit_rdc = 0;
 
 	for (i = 0; i <= pb.temp_max_stage; i++) {
 		ret = snprintf(str, STR_SIZE, "battery%d-path-rdc-t%d", fg_data.bat_type, i);
