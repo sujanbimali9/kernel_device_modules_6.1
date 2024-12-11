@@ -1078,6 +1078,14 @@ bootargs_ext = "";
 	};
 };
 
+&mt6681_sound {
+	audio-r-miso1-enable = <1>;
+};
+
+&mt6681_accdet {
+	accdet-irq-gpio-enable = <1>;
+};
+
 &speech_usip_mem {
 	compatible = "mediatek,speech-usip-mem";
 	adsp-phone-call-enh-enable = <0x3>;
