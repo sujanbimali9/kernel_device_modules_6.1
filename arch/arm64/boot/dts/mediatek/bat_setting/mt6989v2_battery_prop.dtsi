@@ -68,6 +68,8 @@
 	multi-temp-gauge0 = <(1)>;
 	/* Multi gauge0 enable */
 	rbat-pull-up-volt = <(1840)>;
+	/* detect-bat-type only for internal*/
+	detect-bat-type = <(0)>;
 	/* 2.8v shutdown cond */
 	vbat2-det-voltage1 = <(28500)>;
 	vbat2-det-voltage2 = <(26000)>;
