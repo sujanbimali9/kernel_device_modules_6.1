@@ -299,6 +299,38 @@ static void ufs_mtk_rpmb_purge_timer_cb(struct timer_list *list)
 	dev_info(hba->dev, "purge timer force deactivate");
 }
 
+int ufs_mtk_test_rpmb_ready(struct scsi_device *rpmb)
+{
+	struct scsi_sense_hdr sshdr = {0};
+	int retries = 10;
+	int ret;
+	char cmd[] = {
+		TEST_UNIT_READY, 0, 0, 0, 0, 0,
+	};
+	const struct scsi_exec_args exec_args = {
+		.sshdr = &sshdr,
+	};
+
+retry:
+	ret = scsi_execute_cmd(rpmb, cmd, REQ_OP_DRV_IN, NULL, 0,
+				SEC_PROTOCOL_TIMEOUT, SEC_PROTOCOL_RETRIES, &exec_args);
+
+	if (ret && scsi_sense_valid(&sshdr) &&
+	    sshdr.sense_key == UNIT_ATTENTION) {
+		if (--retries > 0)
+			goto retry;
+	}
+
+	if (ret)
+		dev_info(&rpmb->sdev_dev, "%s: failed with err %0x\n",
+			__func__, ret);
+
+	if (scsi_sense_valid(&sshdr) && sshdr.sense_key)
+		scsi_print_sense_hdr(rpmb, "rpmb: test unit ready", &sshdr);
+
+	return ret;
+}
+
 struct ufs_hba *g_hba;
 /**
  * ufs_mtk_rpmb_ddd - add mtk rpmb cdev
@@ -387,6 +419,9 @@ find_exit:
 	if (host->sdev_rpmb->rpm_autosuspend)
 		pm_runtime_set_autosuspend_delay(&host->sdev_rpmb->sdev_gendev,
 						 MTK_RPM_AUTOSUSPEND_DELAY_MS);
+
+	ufs_mtk_test_rpmb_ready(host->sdev_rpmb);
+
 out_put_dev:
 	scsi_device_put(host->sdev_rpmb);
 
