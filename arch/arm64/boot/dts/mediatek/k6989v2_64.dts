@@ -1093,7 +1093,7 @@ bootargs_ext = "";
 };
 
 &bt {
-	flavor-bin = "dx3";
+	flavor-bin = "2g2a";
 };
 
 &mt6363_vbuck5 {
