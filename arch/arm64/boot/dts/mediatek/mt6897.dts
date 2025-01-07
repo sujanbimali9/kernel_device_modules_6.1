@@ -6874,7 +6874,7 @@
 			#phy-cells = <0>;
 			reg = <0 0x11100000 0 0x10000>,
 			      <0 0x11110000 0 0x10000>;
-			reg-names = "phy-sif", "phy-ckm";
+			reg-names = "sif", "ckm";
 			status = "disabled";
 
 			power-domains = <&scpsys MT6897_POWER_DOMAIN_PEXTP_PHY0>;
