@@ -614,7 +614,7 @@ static int battery_psy_get_property(struct power_supply *psy,
 	union power_supply_propval *val)
 {
 	int ret = 0;
-	int curr_now = 0, curr_avg = 0;
+	int curr_now = 0, curr_avg = 0, voltage_now = 0;
 	struct mtk_battery *gm;
 	struct battery_data *bs_data;
 
@@ -712,16 +712,17 @@ static int battery_psy_get_property(struct power_supply *psy,
 		}
 
 		if (gm->disableGM30)
-			bs_data->bat_batt_vol = 4000;
+			voltage_now = 4000;
 		else
 			ret = gauge_get_property_control(gm, GAUGE_PROP_BATTERY_VOLTAGE,
-				&bs_data->bat_batt_vol, 1);
+				&voltage_now, 1);
 
 		if (ret == -EHOSTDOWN)
-			val->intval = gm->vbat;
+			val->intval = gm->vbat * 1000;
 		else {
+			bs_data->bat_batt_vol = voltage_now;
 			gm->vbat = bs_data->bat_batt_vol;
-		val->intval = bs_data->bat_batt_vol * 1000;
+			val->intval = bs_data->bat_batt_vol * 1000;
 		}
 		ret = 0;
 		break;

@@ -3057,7 +3057,7 @@ out:
 static int bat_vol_get(struct mtk_gauge *gauge, struct mtk_gauge_sysfs_field_info *attr, int *val)
 {
 	struct mt6375_priv *priv = container_of(gauge, struct mt6375_priv, gauge);
-	int i, ret, vbat_mon = 0;
+	int i, ret, vbat_mon = 0, vbat_tmp = 0;
 	u32 data = 0;
 	static long long t1;
 	static int print_period = 3;
@@ -3071,11 +3071,12 @@ static int bat_vol_get(struct mtk_gauge *gauge, struct mtk_gauge_sysfs_field_inf
 		return -EOPNOTSUPP;
 	}
 
-	ret = iio_read_channel_processed(gauge->chan_bat_voltage, val);
+	ret = iio_read_channel_processed(gauge->chan_bat_voltage, &vbat_tmp);
 	if (ret < 0) {
 		bm_err("[%s]read fail,ret=%d\n", __func__, ret);
 		return ret;
 	}
+	*val = vbat_tmp;
 
 	if (*val < 1000) {
 		if (t1 == 0) {
