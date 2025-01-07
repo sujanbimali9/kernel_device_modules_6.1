@@ -11,18 +11,12 @@
 
 	/* batching */
 	report-region-idx = <3>;
-	report-buf-addr = <0>; /* */
-	report-buf-size = <0>;
 	batch-region-idx = <9>;
 
 	ipi-mbox-size = <64>;
 
 	/* dfd */
 	dfd-region-idx = <4>;
-	dfd-cmd-addr = <0>;
-	dfd-cmd-size = <0>;
-	dfd-value-addr = <0>;
-	dfd-value-size = <0>;
 	dfd-value-region-size = <0x2800>;
 };
 
