@@ -912,6 +912,10 @@ SND_SOC_DAILINK_DEFS(dspspatializer,
 	DAILINK_COMP_ARRAY(COMP_CPU("audio_task_spatializer_dai")),
 	DAILINK_COMP_ARRAY(COMP_DUMMY()),
 	DAILINK_COMP_ARRAY(COMP_PLATFORM("snd-audio-dsp")));
+SND_SOC_DAILINK_DEFS(dspdynamic,
+	DAILINK_COMP_ARRAY(COMP_CPU("audio_task_dynamic_dai")),
+	DAILINK_COMP_ARRAY(COMP_DUMMY()),
+	DAILINK_COMP_ARRAY(COMP_PLATFORM("snd-audio-dsp")));
 SND_SOC_DAILINK_DEFS(dspplayback,
 	DAILINK_COMP_ARRAY(COMP_CPU("audio_task_Playback_dai")),
 	DAILINK_COMP_ARRAY(COMP_DUMMY()),
@@ -1733,6 +1737,11 @@ static struct snd_soc_dai_link mt6878_mt6369_dai_links[] = {
 		.name = "DSP_Playback_Spatializer",
 		.stream_name = "DSP_Playback_Spatializer",
 		SND_SOC_DAILINK_REG(dspspatializer),
+	},
+	{
+		.name = "DSP_Playback_Dynamic",
+		.stream_name = "DSP_Playback_Dynamic",
+		SND_SOC_DAILINK_REG(dspdynamic),
 	},
 	{
 		.name = "DSP_Playback_Playback",
