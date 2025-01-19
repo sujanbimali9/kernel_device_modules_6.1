@@ -1155,6 +1155,12 @@ struct mtk_battery {
 
 	int dynamic_shutdown_cond;
 	int bob_exist;
+
+	/* vsys bound*/
+	int disable_quick_shutdown;
+	int vsys_det_voltage1;
+	int vsys_det_voltage2;
+	int down_to_low_bat;
 };
 
 struct mtk_battery_sysfs_field_info {

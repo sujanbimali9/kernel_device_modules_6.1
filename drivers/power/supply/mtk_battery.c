@@ -1614,6 +1614,10 @@ void fg_custom_init_from_header(struct mtk_battery *gm)
 	gm->bat_voltage_low_bound = BAT_VOLTAGE_LOW_BOUND;
 	gm->low_tmp_bat_voltage_low_bound = LOW_TMP_BAT_VOLTAGE_LOW_BOUND;
 
+	gm->vsys_det_voltage1 = VSYS_DET_VOLTAGE1;
+	gm->vsys_det_voltage2 = VSYS_DET_VOLTAGE2;
+	gm->disable_quick_shutdown = DISABLE_QUICK_SHUTDOWN;
+
 	fg_cust_data->dc_ratio_sel = DC_RATIO_SEL;
 	fg_cust_data->dc_r_cnt = DC_R_CNT;
 
@@ -2492,6 +2496,13 @@ void fg_custom_init_from_dts(struct platform_device *dev,
 		&(gm->bat_voltage_low_bound), 1);
 	fg_read_dts_val(np, "LOW_TMP_BAT_VOLTAGE_LOW_BOUND",
 		&(gm->low_tmp_bat_voltage_low_bound), 1);
+	/* quick shutdown*/
+	fg_read_dts_val(np, "VSYS_DET_VOLTAGE1",
+		&(gm->vsys_det_voltage1), 1);
+	fg_read_dts_val(np, "VSYS_DET_VOLTAGE2",
+		&(gm->vsys_det_voltage2), 1);
+	fg_read_dts_val(np, "DISABLE_QUICK_SHUTDOWN",
+		&(gm->disable_quick_shutdown), 1);
 	/* battery temperature  related*/
 	fg_read_dts_val(np, "RBAT_PULL_UP_R", &(gm->rbat.rbat_pull_up_r), 1);
 	fg_read_dts_val(np, "RBAT_PULL_UP_VOLT",
@@ -3818,7 +3829,6 @@ static int shutdown_event_handler(struct mtk_battery *gm)
 	struct timespec64 tmp_duraction;
 	int polling = 0;
 	static int ui_zero_time_flag;
-	static int down_to_low_bat;
 	int now_current = 0;
 	int current_ui_soc = gm->ui_soc;
 	int current_soc = gm->soc;
@@ -3929,24 +3939,24 @@ static int shutdown_event_handler(struct mtk_battery *gm)
 			sdd->lowbatteryshutdown = true;
 			polling++;
 
-			if (down_to_low_bat == 0) {
+			if (gm->down_to_low_bat == 0) {
 				if (IS_ENABLED(
 					LOW_TEMP_DISABLE_LOW_BAT_SHUTDOWN)) {
 					if (tmp >= LOW_TEMP_THRESHOLD) {
-						down_to_low_bat = 1;
+						gm->down_to_low_bat = 1;
 						bm_debug("normal tmp, battery voltage is low shutdown\n");
 						wakeup_fg_algo(gm,
 							FG_INTR_SHUTDOWN);
 					} else if (sdd->avgvbat <=
 						gm->low_tmp_bat_voltage_low_bound) {
-						down_to_low_bat = 1;
+						gm->down_to_low_bat = 1;
 						bm_debug("cold tmp, battery voltage is low shutdown\n");
 						wakeup_fg_algo(gm,
 							FG_INTR_SHUTDOWN);
 					} else
 						bm_debug("low temp disable low battery sd\n");
 				} else {
-					down_to_low_bat = 1;
+					gm->down_to_low_bat = 1;
 					bm_debug("[%s]avg vbat is low to shutdown\n",
 						__func__);
 					wakeup_fg_algo(gm, FG_INTR_SHUTDOWN);
@@ -3974,7 +3984,7 @@ static int shutdown_event_handler(struct mtk_battery *gm)
 			}
 		} else {
 			/* greater than 3.4v, clear status */
-			down_to_low_bat = 0;
+			gm->down_to_low_bat = 0;
 			ui_zero_time_flag = 0;
 			sdd->pre_time[LOW_BAT_VOLT] = 0;
 			sdd->lowbatteryshutdown = false;
@@ -3986,7 +3996,7 @@ static int shutdown_event_handler(struct mtk_battery *gm)
 				__func__,
 			sdd->avgvbat, current_ui_soc,
 			(int)tmp_duraction.tv_sec,
-			down_to_low_bat, ui_zero_time_flag,
+			gm->down_to_low_bat, ui_zero_time_flag,
 			(int)sdd->pre_time[LOW_BAT_VOLT],
 			sdd->lowbatteryshutdown,
 			sdd->batidx, sdd->batdata[sdd->batidx]);
@@ -4017,20 +4027,80 @@ static enum alarmtimer_restart power_misc_kthread_fgtimer_func(
 	return ALARMTIMER_NORESTART;
 }
 
+int fg_get_vsys(void)
+{
+	struct power_supply *psy;
+	union power_supply_propval val;
+	int ret;
+
+	psy = power_supply_get_by_name("mtk-master-charger");
+	if (psy) {
+		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_POWER_NOW, &val);
+		if (ret >= 0)
+			ret = val.intval / 1000;
+		else {
+			ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_CHARGE_NOW, &val);
+			bm_err("[%s] get POWER_SUPPLY_PROP_POWER_NOW fail\n", __func__);
+			if (ret >= 0)
+				ret = val.intval / 1000;
+			else {
+				ret = gauge_get_int_property(GAUGE_PROP_BATTERY_VOLTAGE);
+				bm_err("[%s] get POWER_SUPPLY_PROP_CHARGE_NOW fail\n", __func__);
+			}
+		}
+		power_supply_put(psy);
+	} else {
+		ret = gauge_get_int_property(GAUGE_PROP_BATTERY_VOLTAGE);
+		bm_err("[%s] get charger power supply fail\n", __func__);
+	}
+
+	return ret;
+}
+
+static ktime_t check_power_misc_time(struct mtk_battery *gm)
+{
+	ktime_t ktime;
+	int vsys = 0;
+
+	if (gm->disable_quick_shutdown == 1) {
+		ktime = ktime_set(10, 0);
+		goto out;
+	}
+
+	if (gm->down_to_low_bat == 1) {
+		ktime = ktime_set(10, 0);
+		goto out;
+	}
+
+	vsys = fg_get_vsys();
+	if (vsys > gm->vsys_det_voltage1)
+		ktime = ktime_set(10, 0);
+	else if (vsys > gm->vsys_det_voltage2)
+		ktime = ktime_set(1, 0);
+	else
+		ktime = ktime_set(0, 100 * NSEC_PER_MSEC);
+
+out:
+	bm_debug("%s check average timer vsys:%d, time(msec):%lld disable: %d bound: %d %d\n",
+		__func__, vsys, ktime_to_ms(ktime),
+			gm->disable_quick_shutdown, gm->vsys_det_voltage1, gm->vsys_det_voltage2);
+
+	return ktime;
+}
+
+
 static void power_misc_handler(void *arg)
 {
 	struct mtk_battery *gm = arg;
 	struct shutdown_controller *sdd = &gm->sdc;
-	struct timespec64 end_time = {0}, tmp_time_now;
-	ktime_t ktime, time_now;
+	ktime_t ktime, time_now, ktime_next;
 	int secs = 0;
 
 	secs = shutdown_event_handler(gm);
 	if (secs != 0 && gm->disableGM30 == false) {
 		time_now  = ktime_get_boottime();
-		tmp_time_now  = ktime_to_timespec64(time_now);
-		end_time.tv_sec = tmp_time_now.tv_sec + secs;
-		ktime = ktime_set(end_time.tv_sec, end_time.tv_nsec);
+		ktime_next = check_power_misc_time(gm);
+		ktime = ktime_add(time_now, ktime_next);
 
 		alarm_start(&sdd->kthread_fgtimer, ktime);
 		bm_debug("%s:set new alarm timer:%ds\n",
