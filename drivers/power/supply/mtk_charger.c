@@ -3040,6 +3040,7 @@ static int charger_routine_thread(void *arg)
 		check_battery_exist(info);
 		check_dynamic_mivr(info);
 		charger_check_status(info);
+		mtk_check_ta_status(info);
 		kpoc_power_off_check(info);
 
 		if (is_disable_charger(info) == false &&
@@ -3747,8 +3748,6 @@ int notify_adapter_event(struct notifier_block *notifier,
 	}
 	chr_debug("%s: evt: pd:%d, ufcs:%d\n", __func__,
 	pinfo->ta_status[PD], pinfo->ta_status[UFCS]);
-		/* adapter_control */
-	mtk_check_ta_status(pinfo);
 	if (report_psy)
 		power_supply_changed(pinfo->psy1);
 	return NOTIFY_DONE;
