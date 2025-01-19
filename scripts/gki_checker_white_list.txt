@@ -39,11 +39,14 @@ c CONFIG_USB_NET_AX88179_178A
 c CONFIG_USB_NET_AX8817X
 c CONFIG_USB_PD_VBUS_STABLE_TOUT
 c CONFIG_ZRAM_WRITEBACK
+c CONFIG_PCIE_PATCH_BACK
 f drivers/base/core.c
 f drivers/gpu/drm/drm_mipi_dsi.c
 f drivers/iommu/iova.c
 f drivers/media/common/videobuf2/videobuf2-core.c
 f drivers/pinctrl/pinmux.c
+f drivers/pci/pcie/portdrv_core.c
+f drivers/pci/pcie/portdrv_pci.c
 f drivers/remoteproc/remoteproc_core.c
 f drivers/tty/serial/serial_core.c
 f drivers/tty/sysrq.c
