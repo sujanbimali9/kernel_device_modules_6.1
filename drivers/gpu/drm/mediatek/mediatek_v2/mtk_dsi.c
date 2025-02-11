@@ -11843,6 +11843,7 @@ static const struct mtk_dsi_driver_data mt6989_dsi_driver_data = {
 	.need_wait_fifo = false,
 	.dsi_buffer = true,
 	.smi_dbg_disable = true,
+	.disable_te_timeout_by_set_cnt = true,
 	.buffer_unit = 32,
 	.sram_unit = 32,
 	.urgent_lo_fifo_us = 14,
