@@ -5868,15 +5868,10 @@ static void mtk_crtc_frame_buffer_release(struct drm_crtc *crtc,
 		DDPPR_ERR("priv or priv->data is null\n");
 		return;
 	}
-	if (priv->data->mmsys_id == MMSYS_MT6878 && priv->is_dual_disp){
-		DDPINFO("To do workaround:%s():%d\n", __func__, __LINE__);
-		return ;
-	}
 
 	if (disp_helper_get_stage() == DISP_HELPER_STAGE_NORMAL) {
 		if (already_free == true || IS_ERR_OR_NULL(crtc))
 			return;
-
 
 		if (index == 0 && hrt_valid == true && mtk_crtc->is_plane0_updated == true) {
 			/*free fb buf after the 1st valid input buffer is unused*/
@@ -14514,8 +14509,18 @@ void mtk_drm_crtc_plane_update(struct drm_crtc *crtc, struct drm_plane *plane,
 		DISP_SLOT_SUBTRACTOR_WHEN_FREE(mtk_get_plane_slot_idx(mtk_crtc, plane_index)));
 	cmdq_pkt_write(cmdq_handle, mtk_crtc->gce_obj.base, addr, sub, ~0);
 #endif
-	if (plane_index == 0)
+	if(plane_index == 0 && priv->data->mmsys_id != MMSYS_MT6878){
 		mtk_crtc->is_plane0_updated = true;
+		return ;
+	} else if(priv->data->mmsys_id == MMSYS_MT6878){
+		if(plane_index == 0 && !priv->is_dual_disp){
+			mtk_crtc->is_plane0_updated = true;
+			return ;
+		} else if(plane_index == 1 && priv->is_dual_disp){
+			mtk_crtc->is_plane0_updated = true;
+			return ;
+		}
+	}
 }
 
 static void mtk_crtc_wb_comp_config(struct drm_crtc *crtc,
