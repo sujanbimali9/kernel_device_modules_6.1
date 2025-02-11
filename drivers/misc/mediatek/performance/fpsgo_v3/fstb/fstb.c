@@ -557,6 +557,7 @@ int fpsgo_other2fstb_get_fps(int pid, unsigned long long bufID,
 
 	return 0;
 }
+EXPORT_SYMBOL_GPL(fpsgo_other2fstb_get_fps);
 
 static int fstb_enter_delete_render_info(int pid, unsigned long long bufID)
 {
@@ -2907,7 +2908,6 @@ int mtk_fstb_init(void)
 #if defined(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT)
 	ged_kpi_output_gfx_info2_fp = gpu_time_update;
 #endif
-
 	if (!fpsgo_sysfs_create_dir(NULL, "fstb", &fstb_kobj)) {
 		fpsgo_sysfs_create_file(fstb_kobj,
 				&kobj_attr_fpsgo_status);

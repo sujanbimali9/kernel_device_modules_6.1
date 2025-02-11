@@ -145,6 +145,8 @@ static int sbe2fpsgo_query_is_running;
 int powerhal_tid;
 
 void (*rsu_cpufreq_notifier_fp)(int cluster_id, unsigned long freq);
+void (*game_engine_cooler_set_last_sleep_duration_fp)(int cur_pid);
+EXPORT_SYMBOL_GPL(game_engine_cooler_set_last_sleep_duration_fp);
 
 /* TODO: event register & dispatch */
 int fpsgo_is_enable(void)
@@ -282,6 +284,8 @@ static void fpsgo_notifier_wq_cb_qudeq(int qudeq,
 					cur_pid);
 			fpsgo_ctrl2comp_enqueue_end(cur_pid, curr_ts,
 					id, sf_buf_id);
+			if (game_engine_cooler_set_last_sleep_duration_fp)
+				game_engine_cooler_set_last_sleep_duration_fp(cur_pid);
 		}
 		break;
 	case 0:

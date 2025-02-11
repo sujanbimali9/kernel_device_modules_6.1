@@ -272,6 +272,7 @@ struct fpsgo_boost_attr {
 
 	/* Minus idle time*/
 	int aa_b_minus_idle_t_by_pid;
+	int engine_cooler_enable_by_pid;
 };
 
 struct FSTB_FRAME_L2Q_INFO {

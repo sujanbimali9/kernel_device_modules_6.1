@@ -313,6 +313,7 @@ static int exp_fps_disp_enable;
 static int rl_l2q_enable;
 static int rl_l2q_exp_us;
 static int rl_l2q_exp_times;
+static int engine_cooler_enable;
 
 module_param(bhr, int, 0644);
 module_param(bhr_opp, int, 0644);
@@ -467,6 +468,11 @@ static unsigned int *lastest_obv_cl[LOADING_CNT];
 static unsigned int *lastest_is_cl_isolated[LOADING_CNT];
 static unsigned int lastest_idx;
 static unsigned long long last_cb_ts;
+
+void (*game_set_heaviest_pid_fp)(int heaviest_pid);
+EXPORT_SYMBOL_GPL(game_set_heaviest_pid_fp);
+void (*game_set_fps_fp)(int pid, int target_fps);
+EXPORT_SYMBOL_GPL(game_set_fps_fp);
 
 void fpsgo_get_fbt_mlock(const char *tag)
 {
@@ -2274,6 +2280,7 @@ void fbt_set_min_cap_locked(struct render_info *thr, int min_cap,
 	int max_cap_other;
 	int max_util_other;
 	int user_cpumask[FPSGO_MAX_GROUP];
+	int engine_cooler_enable_final;
 
 	if (!uclamp_boost_enable)
 		return;
@@ -2300,6 +2307,7 @@ void fbt_set_min_cap_locked(struct render_info *thr, int min_cap,
 	ls_groupmask_final = thr->attr.ls_groupmask_by_pid;
 	vip_mask_final = thr->attr.vip_mask_by_pid;
 	set_vvip_final = thr->attr.set_vvip_by_pid;
+	engine_cooler_enable_final = thr->attr.engine_cooler_enable_by_pid;
 	fbt_get_user_group_setting(thr, user_cpumask);
 
 	if (boost_VIP_final == FPSGO_TASK_VIP)
@@ -2389,6 +2397,14 @@ void fbt_set_min_cap_locked(struct render_info *thr, int min_cap,
 
 
 		heaviest_pid = fbt_get_heaviest_pid(thr->dep_arr, thr->dep_valid_size);
+		if (engine_cooler_enable_final) {
+			if (game_set_heaviest_pid_fp)
+				game_set_heaviest_pid_fp(heaviest_pid);
+		} else {
+			if (game_set_heaviest_pid_fp)
+				game_set_heaviest_pid_fp(-1);
+		}
+
 		second_heavy_pid = fbt_find_second_heavy(thr->dep_arr,
 						thr->dep_valid_size, heaviest_pid);
 		ret = fbt_group_dep(group_by_lr_final, thr->dep_arr, thr->dep_valid_size, heavy_group_num_final,
@@ -2564,6 +2580,7 @@ void fbt_set_render_boost_attr(struct render_info *thr)
 	render_attr->limit_rfreq2cap_by_pid = limit_rfreq2cap;
 	render_attr->limit_cfreq2cap_m_by_pid = limit_cfreq2cap_m;
 	render_attr->limit_rfreq2cap_m_by_pid = limit_rfreq2cap_m;
+	render_attr->engine_cooler_enable_by_pid = engine_cooler_enable;
 
 #if FPSGO_MW
 	fpsgo_attr = fpsgo_find_attr_by_pid(thr->tgid, 0);
@@ -2743,6 +2760,8 @@ void fbt_set_render_boost_attr(struct render_info *thr)
 	if (pid_attr.limit_min_cap_target_t_by_pid != BY_PID_DEFAULT_VAL)
 		render_attr->limit_min_cap_target_t_by_pid =
 			pid_attr.limit_min_cap_target_t_by_pid;
+	if (pid_attr.engine_cooler_enable_by_pid != BY_PID_DEFAULT_VAL)
+		render_attr->engine_cooler_enable_by_pid = pid_attr.engine_cooler_enable_by_pid;
 
 by_tid:
 	fpsgo_attr_tid = fpsgo_find_attr_by_tid(thr->pid, 0);
@@ -5797,6 +5816,10 @@ static void fbt_frame_start(struct render_info *thr, unsigned long long ts)
 
 	if (!test_bit(ADPF_TYPE, &thr->master_type))
 		fpsgo_systrace_c_fbt(thr->pid, thr->buffer_id, targetfps, "expected_fps");
+
+	if (game_set_fps_fp)
+		game_set_fps_fp(thr->pid, targetfpks);
+
 	fpsgo_systrace_c_fbt_debug(thr->pid, thr->buffer_id, targettime, "expected_time");
 
 	fbt_set_render_boost_attr(thr);
@@ -7700,6 +7723,11 @@ static ssize_t fbt_attr_by_pid_store(struct kobject *kobj,
 			boost_attr->limit_min_cap_target_t_by_pid = val;
 		else if (val == BY_PID_DEFAULT_VAL && action == 'u')
 			boost_attr->limit_min_cap_target_t_by_pid = BY_PID_DEFAULT_VAL;
+	} else if (!strcmp(cmd, "engine_cooler_enable")) {
+		if ((val <= 1 && val >= 0) && action == 's')
+			boost_attr->engine_cooler_enable_by_pid = val;
+		else if (val == BY_PID_DEFAULT_VAL && action == 'u')
+			boost_attr->engine_cooler_enable_by_pid = BY_PID_DEFAULT_VAL;
 	}
 
 delete_pid:
@@ -9335,6 +9363,10 @@ FBT_SYSFS_READ(rl_l2q_enable, fbt_mlock, rl_l2q_enable);
 FBT_SYSFS_WRITE_VALUE(rl_l2q_enable, fbt_mlock, rl_l2q_enable, 0, 1);
 static KOBJ_ATTR_RW(rl_l2q_enable);
 
+FBT_SYSFS_READ(engine_cooler_enable, fbt_mlock, engine_cooler_enable);
+FBT_SYSFS_WRITE_VALUE(engine_cooler_enable, fbt_mlock, engine_cooler_enable, 0, 1);
+static KOBJ_ATTR_RW(engine_cooler_enable);
+
 void fbt_init_cpu_loading_info(void)
 {
 	int i = 0, err_exit = 0;
@@ -9597,6 +9629,8 @@ int __init fbt_cpu_init(void)
 	rl_l2q_enable = 0;
 	rl_l2q_exp_times = DEFAULT_FPSGO_EXP_L2Q_MULTIPLE_TIMES;
 
+	engine_cooler_enable = 0;
+
 	if (cluster_num <= 0)
 		FPSGO_LOGE("cpufreq policy not found");
 
@@ -9686,12 +9720,13 @@ int __init fbt_cpu_init(void)
 		fpsgo_sysfs_create_file(fbt_kobj, &kobj_attr_fbt_attr_by_pid);
 		fpsgo_sysfs_create_file(fbt_kobj, &kobj_attr_fbt_attr_by_tid);
 #endif  // FPSGO_MW
+
 #if FPSGO_DYNAMIC_WL
 #else  // FPSGO_DYNAMIC_WL
 		fpsgo_sysfs_create_file(fbt_kobj, &kobj_attr_table_freq);
 		fpsgo_sysfs_create_file(fbt_kobj, &kobj_attr_table_cap);
 #endif  // FPSGO_DYNAMIC_WL
-
+		fpsgo_sysfs_create_file(fbt_kobj, &kobj_attr_engine_cooler_enable);
 	}
 
 	INIT_LIST_HEAD(&blc_list);

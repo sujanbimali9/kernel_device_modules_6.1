@@ -385,6 +385,7 @@ mgk_64_k61_device_modules = [
     "drivers/misc/mediatek/performance/powerhal_cpu_ctrl/powerhal_cpu_ctrl.ko",
     "drivers/misc/mediatek/performance/touch_boost/touch_boost.ko",
     "drivers/misc/mediatek/performance/uload_ind/uload_ind.ko",
+    "drivers/misc/mediatek/performance/mtk_game.ko",
     "drivers/misc/mediatek/pgboost/pgboost.ko",
     "drivers/misc/mediatek/pidmap/pidmap.ko",
     "drivers/misc/mediatek/pmic_protect/mtk-pmic-oc-debug.ko",
@@ -897,6 +898,7 @@ def get_overlay_modules_list():
 
         mgk_64_k61_device_modules.remove("drivers/misc/mediatek/performance/fpsgo_v3/mtk_fpsgo.ko")
         mgk_64_k61_device_modules.remove("drivers/misc/mediatek/performance/frs/frs.ko")
+        mgk_64_k61_device_modules.remove("drivers/misc/mediatek/performance/mtk_game.ko")
 
     if "wifionly.config" in DEFCONFIG_OVERLAYS:
         mgk_64_k61_device_modules.remove("drivers/misc/mediatek/ccci_util/ccci_util_lib.ko")
