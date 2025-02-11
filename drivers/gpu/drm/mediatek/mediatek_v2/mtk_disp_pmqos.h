@@ -43,6 +43,7 @@ struct mtk_larb_hrt_req {
 struct mtk_drm_qos_ctx {
 	unsigned int last_hrt_req;
 	unsigned int last_mmclk_req_idx;
+	unsigned int mmclk_need_up_now;
 	unsigned int last_larb_hrt_max;
 	atomic_t last_hrt_idx;
 	atomic_t hrt_cond_sig;
