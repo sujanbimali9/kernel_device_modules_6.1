@@ -905,7 +905,6 @@ bootargs_ext = "";
 			gauge = <&mt6379_gauge>;
 			isink-load-supply = <&mt6363_isink_load>;
 			imix-r {
-				val = <90>;
 			};
 		};
 
