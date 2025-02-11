@@ -11849,6 +11849,7 @@
 			#phy-cells = <0>;
 			reg = <0 0x11100000 0 0x10000>;
 			reg-names = "sif";
+			port-number = <0>;
 			status = "disabled";
 
 			clocks = <&pextpcfg_ao_clk CLK_PEXTP_P0_PHY_REF>,
@@ -11861,6 +11862,7 @@
 			#phy-cells = <0>;
 			reg = <0 0x11120000 0 0x10000>;
 			reg-names = "sif";
+			port-number = <1>;
 			status = "disabled";
 
 			clocks = <&pextpcfg_ao_clk CLK_PEXTP_P1_PHY_REF>,
