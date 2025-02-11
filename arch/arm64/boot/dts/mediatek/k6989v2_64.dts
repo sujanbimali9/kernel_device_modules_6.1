@@ -243,6 +243,7 @@ bootargs_ext = "";
 		pm-enable-gpios = <&pio 215 0>;
 		reset-gpios = <&pio 230 0>;
 		gate-ic = <4831>;
+		res-switch = <2>;
 		pinctrl-names = "default";
 		port {
 			panel_in1: endpoint {
@@ -268,6 +269,7 @@ bootargs_ext = "";
 		reg = <2>;
 		pm-enable-gpios = <&pio 215 0>;
 		reset-gpios = <&pio 230 0>;
+		res-switch = <2>;
 		gate-ic = <4831>;
 		pinctrl-names = "default";
 		port {
@@ -281,6 +283,7 @@ bootargs_ext = "";
 		reg = <3>;
 		pm-enable-gpios = <&pio 215 0>;
 		reset-gpios = <&pio 230 0>;
+		res-switch = <2>;
 		gate-ic = <4831>;
 		pinctrl-names = "default";
 		port {
@@ -294,6 +297,7 @@ bootargs_ext = "";
 		reg = <4>;
 		pm-enable-gpios = <&pio 215 0>;
 		reset-gpios = <&pio 230 0>;
+		res-switch = <2>;
 		gate-ic = <4831>;
 		pinctrl-names = "default";
 		port {
