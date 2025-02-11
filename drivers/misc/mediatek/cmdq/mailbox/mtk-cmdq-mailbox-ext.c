@@ -3292,8 +3292,12 @@ void cmdq_mbox_disable(void *chan)
 {
 	struct cmdq *cmdq = container_of(((struct mbox_chan *)chan)->mbox,
 		typeof(*cmdq), mbox);
-	struct cmdq_thread *thread;
 	s32 usage, i, thd_usage;
+	unsigned long flags = 0L;
+	struct cmdq_thread *thread = ((struct mbox_chan *)chan)->con_priv;
+
+	spin_lock_irqsave(&thread->chan->lock, flags);
+	spin_unlock_irqrestore(&thread->chan->lock, flags);
 
 	mutex_lock(&cmdq->mbox_mutex);
 
