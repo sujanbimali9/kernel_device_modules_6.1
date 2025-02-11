@@ -20000,7 +20000,8 @@ int mtk_crtc_lcm_ATA(struct drm_crtc *crtc)
 			__func__, __LINE__);
 			return -EINVAL;
 		}
-
+		cmdq_pkt_wfe(cmdq_handle,
+			mtk_crtc->gce_obj.event[EVENT_VDO_CABC_EOF]);
 		mtk_ddp_comp_io_cmd(output_comp,
 			cmdq_handle, DSI_STOP_VDO_MODE, NULL);
 		cmdq_pkt_flush(cmdq_handle);
@@ -20022,8 +20023,9 @@ int mtk_crtc_lcm_ATA(struct drm_crtc *crtc)
 		mtk_ddp_comp_io_cmd(output_comp,
 			cmdq_handle, DSI_START_VDO_MODE, NULL);
 		mtk_disp_mutex_trigger(mtk_crtc->mutex[0], cmdq_handle);
-		mtk_ddp_comp_io_cmd(output_comp, cmdq_handle, COMP_REG_START,
-				    NULL);
+		mtk_ddp_comp_io_cmd(output_comp, cmdq_handle, COMP_REG_START, NULL);
+		cmdq_pkt_set_event(cmdq_handle,
+			mtk_crtc->gce_obj.event[EVENT_VDO_CABC_EOF]);
 		cmdq_pkt_flush(cmdq_handle);
 		cmdq_pkt_destroy(cmdq_handle);
 	}
