@@ -40,6 +40,8 @@ c CONFIG_USB_NET_AX8817X
 c CONFIG_USB_PD_VBUS_STABLE_TOUT
 c CONFIG_ZRAM_WRITEBACK
 c CONFIG_PCIE_PATCH_BACK
+f arch/arm64/kernel/entry.S
+f arch/arm64/mm/fault.c
 f drivers/base/core.c
 f drivers/gpu/drm/drm_mipi_dsi.c
 f drivers/iommu/iova.c
