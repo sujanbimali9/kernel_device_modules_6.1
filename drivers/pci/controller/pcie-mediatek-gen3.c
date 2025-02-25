@@ -35,6 +35,7 @@
 #include <trace/hooks/traps.h>
 #endif
 
+#include "pcie-mediatek-gen3.h"
 #include "../pci.h"
 #include "../../misc/mediatek/clkbuf/src/clkbuf-ctrl.h"
 
@@ -348,6 +349,7 @@ struct mtk_pcie_port {
 	bool dvfs_req_en;
 	bool peri_reset_en;
 	bool soft_off;
+	bool aer_detect;
 	int irq;
 	u32 saved_irq_state;
 	raw_spinlock_t irq_lock;
@@ -399,9 +401,32 @@ static void __iomem *mtk_pcie_map_bus(struct pci_bus *bus, unsigned int devfn,
 static int mtk_pcie_config_read(struct pci_bus *bus, unsigned int devfn,
 				int where, int size, u32 *val)
 {
+	struct mtk_pcie_port *port = bus->sysdata;
+	u32 reg;
+	int ret;
+
 	mtk_pcie_config_tlp_header(bus, devfn, where, size);
 
-	return pci_generic_config_read32(bus, devfn, where, size, val);
+	ret = pci_generic_config_read32(bus, devfn, where, size, val);
+	if (ret)
+		return ret;
+
+	/* Only port0 use config read detect AER */
+	if (port->port_num != 0)
+		return 0;
+
+	reg = readl_relaxed(port->base + PCIE_INT_STATUS_REG);
+	if (reg & PCIE_AER_EVT) {
+		writel_relaxed(PCIE_RC_CFG, port->base + PCIE_CFGNUM_REG);
+		reg = readl_relaxed(port->base + PCIE_AER_UNC_STATUS);
+		if ((reg & PCI_ERR_UNC_COMP_TIME) && port->aer_detect) {
+			mtk_pcie_dump_link_info(port->port_num);
+			mtk_pcie_disable_data_trans(port->port_num);
+			dev_info(port->dev, "PCIe CPLTO detected!\n");
+		}
+	}
+
+	return 0;
 }
 
 static int mtk_pcie_config_write(struct pci_bus *bus, unsigned int devfn,
@@ -1482,6 +1507,27 @@ int mtk_pcie_remove_port(int port)
 }
 EXPORT_SYMBOL(mtk_pcie_remove_port);
 
+void mtk_pcie_set_aer_detect(int port, bool detect)
+{
+	struct platform_device *pdev;
+	struct mtk_pcie_port *pcie_port;
+
+	pdev = mtk_pcie_find_pdev_by_port(port);
+	if (!pdev) {
+		pr_info("PCIe platform device not found!\n");
+		return;
+	}
+
+	pcie_port = platform_get_drvdata(pdev);
+	if (!pcie_port) {
+		pr_info("PCIe port not found!\n");
+		return;
+	}
+
+	pcie_port->aer_detect = detect;
+}
+EXPORT_SYMBOL(mtk_pcie_set_aer_detect);
+
 /* Set partition when use PCIe MAC debug probe table */
 static void mtk_pcie_mac_dbg_set_partition(struct mtk_pcie_port *port, u32 partition)
 {
@@ -2286,6 +2332,8 @@ static int mtk_pcie_pre_init_6989(struct mtk_pcie_port *port)
 	val &= ~PCIE_P2_SLEEP_TIME_MASK;
 	val |= PCIE_P2_SLEEP_TIME_4US;
 	writel_relaxed(val, port->base + PCIE_ASPM_CTRL);
+
+	port->aer_detect = false;
 
 	return 0;
 }
