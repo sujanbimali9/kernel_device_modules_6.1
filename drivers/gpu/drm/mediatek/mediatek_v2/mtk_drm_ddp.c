@@ -22755,10 +22755,14 @@ void mtk_ddp_insert_dsc_prim_mt6897(struct mtk_drm_crtc *mtk_crtc,
 {
 	struct mtk_panel_params *panel_ext = mtk_drm_get_lcm_ext_params(&mtk_crtc->base);
 	unsigned int addr, value;
+	struct mtk_drm_private *private = mtk_crtc->base.dev->dev_private;
 
 	/* PANEL_COMP_OUT_CROSSBAR1_MOUT to  DISP_DSC_WRAP0 */
 #ifndef DRM_BYPASS_PQ
-	addr = MT6897_PANEL_COMP_OUT_CROSSBAR0_MOUT_EN;
+	if (private->data->main_bypass_pc_path_data == mtk_crtc->path_data)
+		addr = MT6897_PANEL_COMP_OUT_CROSSBAR1_MOUT_EN;
+	else
+		addr = MT6897_PANEL_COMP_OUT_CROSSBAR0_MOUT_EN;
 #else
 	addr = MT6897_PANEL_COMP_OUT_CROSSBAR1_MOUT_EN;
 #endif
@@ -22767,7 +22771,10 @@ void mtk_ddp_insert_dsc_prim_mt6897(struct mtk_drm_crtc *mtk_crtc,
 		       mtk_crtc->config_regs_pa + addr, value, ~0);
 	addr =  MT6897_PANEL_COMP_OUT_CROSSBAR1_SEL_IN;
 #ifndef DRM_BYPASS_PQ
-	value = DISP_PANEL_COMP_OUT_CROSSBAR0_SEL_IN;
+	if (private->data->main_bypass_pc_path_data == mtk_crtc->path_data)
+		value = DISP_PANEL_COMP_OUT_CROSSBAR1_SEL_IN;
+	else
+		value = DISP_PANEL_COMP_OUT_CROSSBAR0_SEL_IN;
 #else
 	value = DISP_PANEL_COMP_OUT_CROSSBAR1_SEL_IN;
 #endif
