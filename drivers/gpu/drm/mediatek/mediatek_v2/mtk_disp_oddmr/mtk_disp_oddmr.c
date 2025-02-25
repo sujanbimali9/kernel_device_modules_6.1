@@ -3565,7 +3565,7 @@ int mtk_oddmr_hrt_cal_notify(int *oddmr_hrt)
 	struct mtk_drm_crtc *mtk_crtc;
 	struct mtk_drm_private *priv = NULL;
 
-	if (!default_comp || !g_oddmr_priv) {
+	if (!default_comp || !g_oddmr_priv || !default_comp->mtk_crtc || !default_comp->mtk_crtc->base.dev) {
 		ret = 0;
 		goto out;
 	}
