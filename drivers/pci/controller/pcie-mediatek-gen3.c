@@ -35,7 +35,6 @@
 #include <trace/hooks/traps.h>
 #endif
 
-#include "pcie-mediatek-gen3.h"
 #include "../pci.h"
 #include "../../misc/mediatek/clkbuf/src/clkbuf-ctrl.h"
 
@@ -1059,11 +1058,8 @@ static void mtk_pcie_irq_handler(struct irq_desc *desc)
 	if (status & PCIE_AER_EVT) {
 		writel_relaxed(PCIE_RC_CFG, port->base + PCIE_CFGNUM_REG);
 		val = readl_relaxed(port->base + PCIE_AER_CO_STATUS);
-		if (val & AER_CO_RE) {
-			dev_info(port->dev, "PCIe RxErr detected\n");
+		if (val & AER_CO_RE)
 			mtk_pcie_dump_link_info(port->port_num);
-			mtk_pcie_disable_data_trans(port->port_num);
-		}
 	}
 
 	for_each_set_bit_from(irq_bit, &status, PCI_NUM_INTX +
@@ -1748,12 +1744,6 @@ int mtk_pcie_disable_data_trans(int port)
 	/* Check the sleep protect ready */
 	if (!mtk_pcie_sleep_protect_ready(pcie_port))
 		return -EPERM;
-
-	val = readl_relaxed(pcie_port->base + PCIE_CFGCTRL);
-	if (val & PCIE_DISABLE_LTSSM) {
-		pr_info("Already disabled data trans, 0x84=%#x\n", val);
-		return 0;
-	}
 
 	val = readl_relaxed(pcie_port->base + PCIE_RST_CTRL_REG);
 	val |= (PCIE_MAC_RSTB | PCIE_PHY_RSTB);
