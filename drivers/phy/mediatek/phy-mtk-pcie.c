@@ -30,7 +30,7 @@
 /* PHY DIG_LN_RX2 registers */
 #define PEXTP_DIG_LN_RX2_REG		0x6000
 #define PEXTP_DIG_LN_RX2_D8		(PEXTP_DIG_LN_RX2_REG + 0xd8)
-#define RG_XTP_LN_RX_AEQ_CYC_SHIFT	GENMASK(29, 20)
+#define RG_XTP_LN_RX_AEQ_CYC_SHIFT	GENMASK(23, 20)
 
 /* PHY ANA GLB registers */
 #define PEXTP_ANA_GLB_00_REG		0x9000
@@ -451,7 +451,7 @@ static int mtk_pcie_phy_init_6989(struct phy *phy)
 		val &= ~RG_XTP_BYPASS_PIPE_RST;
 		writel_relaxed(val, pcie_phy->sif_base + PEXTP_DIG_GLB_20);
 
-		/* Fix AEQ_CYC_SHIFT default value */
+		/* Fix AEQ_CYC_SHIFT GEN1 and GEN2 default value */
 		val = readl_relaxed(pcie_phy->sif_base + PEXTP_DIG_LN_RX2_D8);
 		val &= ~RG_XTP_LN_RX_AEQ_CYC_SHIFT;
 		writel_relaxed(val, pcie_phy->sif_base + PEXTP_DIG_LN_RX2_D8);
