@@ -1608,8 +1608,6 @@ static ssize_t vtskin_info_store(struct kobject *kobj,
 	param->operation = op;
 	param->ref_num = (unsigned int)ref_num;
 	memcpy(&param->vtskin_ref[0], &coef[0], sizeof(struct vtskin_coef) * MAX_VTSKIN_REF_NUM);
-
-	param = &plat_vtskin_info->params[0];
 	mutex_unlock(&plat_vtskin_info->lock);
 
 	return count;
