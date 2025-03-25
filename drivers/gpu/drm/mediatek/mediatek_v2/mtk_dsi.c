@@ -6542,15 +6542,17 @@ void mipi_dsi_dcs_write_gce2(struct mtk_dsi *dsi, struct cmdq_pkt *dummy,
 					  const void *data, size_t len)
 {
 
-	struct cmdq_pkt *handle;
+	struct cmdq_pkt *handle = NULL;
 	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(dsi->encoder.crtc);
-	int dsi_mode = readl(dsi->regs + DSI_MODE_CTRL);
+	int dsi_mode;   /*0:dsi cmd mode,1:dsi vdo mode*/
+	int panel_mode; /*0:vdo,1:cmd*/
 
 	struct mipi_dsi_msg msg = {
 		.tx_buf = data,
 		.tx_len = len
 	};
 
+	DDPINFO("%s +\n", __func__);
 	switch (len) {
 	case 0:
 		return;
@@ -6567,6 +6569,19 @@ void mipi_dsi_dcs_write_gce2(struct mtk_dsi *dsi, struct cmdq_pkt *dummy,
 		msg.type = MIPI_DSI_DCS_LONG_WRITE;
 		break;
 	}
+
+	panel_mode = mtk_dsi_is_cmd_mode(&dsi->ddp_comp);
+
+	if(!panel_mode){
+		mtk_crtc_pkt_create(&handle, &mtk_crtc->base,
+			mtk_crtc->gce_obj.client[CLIENT_DSI_CFG]);
+		cmdq_pkt_wfe(handle,
+			mtk_crtc->gce_obj.event[EVENT_VDO_CABC_EOF]);
+		cmdq_pkt_flush(handle);
+		cmdq_pkt_destroy(handle);
+	}
+
+	dsi_mode = readl(dsi->regs + DSI_MODE_CTRL);
 
 	if (dsi_mode == 0) {
 		mtk_crtc_pkt_create(&handle, &mtk_crtc->base,
@@ -6594,8 +6609,6 @@ void mipi_dsi_dcs_write_gce2(struct mtk_dsi *dsi, struct cmdq_pkt *dummy,
 	} else {
 		mtk_crtc_pkt_create(&handle, &mtk_crtc->base,
 			mtk_crtc->gce_obj.client[CLIENT_DSI_CFG]);
-		cmdq_pkt_wfe(handle,
-				mtk_crtc->gce_obj.event[EVENT_VDO_CABC_EOF]);
 
 		/* build VM cmd */
 		mtk_dsi_vm_cmdq(dsi, &msg, handle);
@@ -6626,23 +6639,37 @@ void mipi_dsi_dcs_write_gce2(struct mtk_dsi *dsi, struct cmdq_pkt *dummy,
 		cmdq_pkt_write(handle, dsi->ddp_comp.cmdq_base,
 			dsi->ddp_comp.regs_pa + DSI_INTSTA, 0,
 			VM_CMD_DONE_INT_EN);
-		cmdq_pkt_set_event(handle,
-			mtk_crtc->gce_obj.event[EVENT_VDO_CABC_EOF]);
 	}
 
 	cmdq_pkt_flush(handle);
 	cmdq_pkt_destroy(handle);
+
+	if(!panel_mode){
+		mtk_crtc_pkt_create(&handle, &mtk_crtc->base,
+			mtk_crtc->gce_obj.client[CLIENT_DSI_CFG]);
+		cmdq_pkt_set_event(handle,
+			mtk_crtc->gce_obj.event[EVENT_VDO_CABC_EOF]);
+		cmdq_pkt_flush(handle);
+		cmdq_pkt_destroy(handle);
+	}
+
+	DDPINFO("%s - panel_mode=%d, dsi_mode=%d\n", __func__, panel_mode, dsi_mode);
 }
+
+
 
 void mipi_dsi_dcs_grp_write_gce(struct mtk_dsi *dsi, struct cmdq_pkt *handle,
 				struct mtk_panel_para_table *para_table,
 				unsigned int para_size)
 {
 	struct mtk_ddp_comp *comp = &dsi->ddp_comp;
+	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(dsi->encoder.crtc);
 
 	mtk_dsi_power_keep_gce(dsi, handle, true);
 	/* wait DSI idle */
 	if (!mtk_dsi_is_cmd_mode(comp)) {
+		cmdq_pkt_wfe(handle,
+			mtk_crtc->gce_obj.event[EVENT_VDO_CABC_EOF]);
 		_mtk_dsi_set_mode(comp, handle, CMD_MODE);
 		if (dsi->slave_dsi)
 			_mtk_dsi_set_mode(&dsi->slave_dsi->ddp_comp, handle, CMD_MODE);
@@ -6670,6 +6697,8 @@ void mipi_dsi_dcs_grp_write_gce(struct mtk_dsi *dsi, struct cmdq_pkt *handle,
 		mtk_dsi_start_vdo_mode(comp, handle);
 		mtk_disp_mutex_trigger(comp->mtk_crtc->mutex[0], handle);
 		mtk_dsi_trigger(comp, handle);
+		cmdq_pkt_set_event(handle,
+			mtk_crtc->gce_obj.event[EVENT_VDO_CABC_EOF]);
 	}
 	mtk_dsi_power_keep_gce(dsi, handle, false);
 }
@@ -9958,14 +9987,17 @@ static void mtk_dsi_vdo_timing_change(struct mtk_dsi *dsi,
 		 */
 		cmdq_pkt_clear_event(handle,
 				mtk_crtc->gce_obj.event[EVENT_CMD_EOF]);
+
+		/*1.3 send cmd: trigger*/
+		mtk_disp_mutex_trigger(comp->mtk_crtc->mutex[0], handle);
+		mtk_dsi_trigger(comp, handle);
+
 		/*set ESD_EOF
 		 * continue send ddic after we change fps
 		 */
 		cmdq_pkt_set_event(handle,
 				mtk_crtc->gce_obj.event[EVENT_VDO_CABC_EOF]);
-		/*1.3 send cmd: trigger*/
-		mtk_disp_mutex_trigger(comp->mtk_crtc->mutex[0], handle);
-		mtk_dsi_trigger(comp, handle);
+
 	} else if (fps_chg_index & MODE_DSI_VFP) {
 		DDPINFO("%s, change VFP\n", __func__);
 
@@ -10069,14 +10101,17 @@ static void mtk_dsi_vdo_timing_change(struct mtk_dsi *dsi,
 			 */
 			cmdq_pkt_clear_event(handle,
 					mtk_crtc->gce_obj.event[EVENT_CMD_EOF]);
+
+			/*1.4 send cmd: trigger*/
+			mtk_disp_mutex_trigger(comp->mtk_crtc->mutex[0], handle);
+			mtk_dsi_trigger(comp, handle);
+
 			/*set ESD_EOF
 			 * continue send ddic after we change fps
 			 */
 			cmdq_pkt_set_event(handle,
 					mtk_crtc->gce_obj.event[EVENT_VDO_CABC_EOF]);
-			/*1.4 send cmd: trigger*/
-			mtk_disp_mutex_trigger(comp->mtk_crtc->mutex[0], handle);
-			mtk_dsi_trigger(comp, handle);
+
 		}
 	}
 
