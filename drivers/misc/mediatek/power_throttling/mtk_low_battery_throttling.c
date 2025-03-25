@@ -15,7 +15,9 @@
 #include "mtk_low_battery_throttling.h"
 #include "pmic_lbat_service.h"
 #include "pmic_lvsys_notify.h"
-
+#include <linux/sched.h>
+#include <linux/signal.h>
+#include <linux/string.h>
 #define CREATE_TRACE_POINTS
 #include "mtk_low_battery_throttling_trace.h"
 #include "../mbraink/mbraink_ioctl_struct_def.h"
@@ -112,6 +114,13 @@ static struct lbat_thl_priv *lbat_data;
 static struct low_battery_callback_table lbcb_tb[LBCB_MAX_NUM] = { {0}, {0} };
 static low_battery_mbrain_callback lb_mbrain_cb;
 static DEFINE_MUTEX(exe_thr_lock);
+static bool PID1_SHUTDOWN;
+
+void pid1_shutdown (void)
+{
+	kill_pid(find_vpid(1), SIGUSR2, 1);
+	pr_info("send SIGUSR2 to pid1 done\n");
+}
 
 static int rearrange_volt(struct lbat_intr_tbl *intr_info, unsigned int *volt_l, unsigned int *volt_h,
 	unsigned int num)
@@ -798,8 +807,13 @@ static int __used pt_check_power_off(void)
 		pt_power_off_cnt = 0;
 
 	if (pt_power_off_cnt >= 4) {
-		pr_info("Powering off by PT.\n");
-		kernel_power_off();
+		if (PID1_SHUTDOWN){
+			pr_info("Powering off by PID1\n");
+			pid1_shutdown();
+		} else {
+			pr_info("Powering off by PT.\n");
+			kernel_power_off();
+		}
 	}
 
 	return ret;
@@ -1373,6 +1387,7 @@ static int low_battery_throttling_probe(struct platform_device *pdev)
 	int lvsys_thd_enable, vbat_thd_enable;
 	struct lbat_thl_priv *priv;
 	struct device_node *np = pdev->dev.of_node;
+	const char *bootargs_ext;
 
 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
@@ -1449,6 +1464,24 @@ static int low_battery_throttling_probe(struct platform_device *pdev)
 	if (ret) {
 		dev_notice(&pdev->dev, "[%s] failed to get pt-shutdown, set to 1\n", __func__);
 		priv->pt_shutdown_en = 1;
+	}
+
+	np = of_find_node_by_name(NULL, "chosen");
+	if (!np)
+		dev_notice(&pdev->dev, "Failed to find chosen node\n");
+	else {
+		ret = of_property_read_string(np, "bootargs_ext", &bootargs_ext);
+		if (ret){
+			dev_notice(&pdev->dev, "Failed to read 'bootargs_ext' property\n");
+			PID1_SHUTDOWN = false;
+		} else {
+			if (strstr(bootargs_ext, "init_sig_shut=true") != NULL) {
+				PID1_SHUTDOWN = true;
+				dev_notice(&pdev->dev, "SHUTDOWN by PID1 enabled\n");
+			} else {
+				PID1_SHUTDOWN = false;
+			}
+		}
 	}
 
 	ret = device_create_file(&(pdev->dev),
