@@ -11425,6 +11425,11 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 				scmi-ise = <12>;
 			};
 		};
+
+		android: android {
+			compatible = "android,firmware";
+			hardware = "mt6878";
+		};
 	};
 
 	sspm: sspm@1c300000 {
