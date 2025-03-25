@@ -170,7 +170,7 @@
 };
 
 &wifi {
-	flavor-bin = "2g2a";
+	flavor-bin = "dx3pp_2g2a";
 	emi-size = <0x1900000>;
 	ppb-emi-offset = <0x01605800>;
 };
