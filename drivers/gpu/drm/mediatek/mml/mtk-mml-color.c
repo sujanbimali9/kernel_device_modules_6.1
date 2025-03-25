@@ -413,6 +413,7 @@ static void color_debug_dump(struct mml_comp *comp)
 
 	/* Enable shadow read working */
 	shadow_ctrl = read_reg_value(comp, color->data->reg_table[COLOR_SHADOW_CTRL]);
+	mml_err("COLOR_SHADOW_CTRL %#010x", shadow_ctrl);
 	shadow_ctrl |= 0x4;
 	writel(shadow_ctrl, base + color->data->reg_table[COLOR_SHADOW_CTRL]);
 

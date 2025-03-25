@@ -1016,6 +1016,7 @@ static void tdshp_debug_dump(struct mml_comp *comp)
 
 	/* Enable shadow read working */
 	shadow_ctrl = read_reg_value(comp, tdshp->data->reg_table[TDSHP_SHADOW_CTRL]);
+	mml_err("TDSHP_SHADOW_CTRL %#010x", shadow_ctrl);
 	shadow_ctrl |= 0x4;
 	writel(shadow_ctrl, base + tdshp->data->reg_table[TDSHP_SHADOW_CTRL]);
 

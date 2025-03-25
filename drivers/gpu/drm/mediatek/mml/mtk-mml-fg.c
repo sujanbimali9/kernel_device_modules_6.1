@@ -600,6 +600,7 @@ static void fg_debug_dump(struct mml_comp *comp)
 
 	/* Enable shadow read working */
 	shadow_ctrl = readl(base + fg->data->reg_table[FG_SHADOW_CTRL]);
+	mml_err("FG_SHADOW_CTRL %#010x", shadow_ctrl);
 	shadow_ctrl |= 0x4;
 	writel(shadow_ctrl, base + fg->data->reg_table[FG_SHADOW_CTRL]);
 

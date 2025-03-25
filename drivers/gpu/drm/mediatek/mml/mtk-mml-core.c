@@ -583,7 +583,7 @@ static void dump_inout(struct mml_task *task)
 	mml_mmp(dumpinfo, MMPROFILE_FLAG_START, task->job.jobid, 0);
 
 	get_frame_str(frame, sizeof(frame), &cfg->info.src);
-	mml_log("in:%s plane:%hhu alpha:%s%s%s job:%u mode:%hhu %s%s acttime %u",
+	mml_log("in:%s plane:%hhu alpha:%s%s%s job:%u mode:%hhu %s %s%s acttime %u",
 		frame,
 		task->buf.src.cnt,
 		cfg->alpharot ? "rot" :
@@ -593,6 +593,7 @@ static void dump_inout(struct mml_task *task)
 		task->buf.src.flush ? " flush" : "",
 		task->job.jobid,
 		cfg->info.mode,
+		cfg->shadow ? "shadow" : "",
 		cfg->disp_vdo ? "vdo" : "cmd",
 		dump_ovlid(cfg->info.mode, cfg->info.ovlsys_id),
 		cfg->info.act_time);
