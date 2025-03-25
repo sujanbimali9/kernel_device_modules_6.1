@@ -266,7 +266,7 @@ bootargs_ext = "";
 		};
 	};
 	panel3@2 {
-		compatible = "nt37801,cmd,fhd";
+		compatible = "nt37801,cmd,fhd,plus";
 		reg = <2>;
 		pm-enable-gpios = <&pio 215 0>;
 		reset-gpios = <&pio 230 0>;
@@ -280,7 +280,7 @@ bootargs_ext = "";
 		};
 	};
 	panel4@3 {
-		compatible = "nt37801,cmd,fhd,plus";
+		compatible = "jdi,nt36672e,cphy,vdo";
 		reg = <3>;
 		pm-enable-gpios = <&pio 215 0>;
 		reset-gpios = <&pio 230 0>;
@@ -294,12 +294,10 @@ bootargs_ext = "";
 		};
 	};
 	panel5@4 {
-		compatible = "jdi,nt36672e,cphy,vdo";
+		compatible = "nt37706a,boe,fhdplus,vdo";
 		reg = <4>;
-		pm-enable-gpios = <&pio 215 0>;
 		reset-gpios = <&pio 230 0>;
 		res-switch = <2>;
-		gate-ic = <4831>;
 		pinctrl-names = "default";
 		port {
 			panel_in5: endpoint {
