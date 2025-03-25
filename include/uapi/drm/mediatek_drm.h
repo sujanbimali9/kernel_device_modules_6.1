@@ -1666,6 +1666,8 @@ struct mtk_pq_relay_enable {
 enum mtk_pq_aal_eventctl {
 	AAL_EVENT_EN = 0x1,
 	AAL_EVENT_STOP = 0x2,
+	AAL_EVENT_FUNC_ON = 0x4,
+	AAL_EVENT_FUNC_OFF = 0x8,
 };
 
 #define GET_PANELS_STR_LEN 64
