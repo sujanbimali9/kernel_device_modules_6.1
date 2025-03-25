@@ -1098,6 +1098,35 @@ void __gpufreq_dump_infra_status(char *log_buf, int *log_len, int log_size)
 		0x13F91034, DRV_Reg32(MFG_RPC_AO_CLK_CFG),
 		0x13F910FC, DRV_Reg32(MFG_RPC_IPS_SES_PWR_CON));
 
+	/* MFG_DEBUG_SEL 0x13FBF170 [23:16] MFG_DEBUG_ASYNC_SEL = 2'h08 */
+	DRV_WriteReg32(MFG_DEBUG_SEL, (DRV_Reg32(MFG_DEBUG_SEL) & ~GENMASK(23, 16)) | BIT(19));
+	GPUFREQ_LOGB(log_buf, log_len, log_size,
+		"%-11s (0x%x): 0x%08x, (0x%x): 0x%08x",
+		"[MFG_GALS]",
+		0x13FBF170, DRV_Reg32(MFG_DEBUG_SEL),
+		0x13FBF17C, DRV_Reg32(MFG_DEBUG_ASYNC));
+	/* MFG_DEBUG_SEL 0x13FBF170 [23:16] MFG_DEBUG_ASYNC_SEL = 2'h0E */
+	DRV_WriteReg32(MFG_DEBUG_SEL, (DRV_Reg32(MFG_DEBUG_SEL) & ~GENMASK(23, 16)) | GENMASK(19, 17));
+	GPUFREQ_LOGB(log_buf, log_len, log_size,
+		"%-11s (0x%x): 0x%08x, (0x%x): 0x%08x",
+		"[MFG_GALS]",
+		0x13FBF170, DRV_Reg32(MFG_DEBUG_SEL),
+		0x13FBF17C, DRV_Reg32(MFG_DEBUG_ASYNC));
+	/* MFG_DEBUG_SEL 0x13FBF170 [23:16] MFG_DEBUG_ASYNC_SEL = 2'h09 */
+	DRV_WriteReg32(MFG_DEBUG_SEL, (DRV_Reg32(MFG_DEBUG_SEL) & ~GENMASK(23, 16)) | BIT(19) | BIT(16));
+	GPUFREQ_LOGB(log_buf, log_len, log_size,
+		"%-11s (0x%x): 0x%08x, (0x%x): 0x%08x",
+		"[MFG_GALS]",
+		0x13FBF170, DRV_Reg32(MFG_DEBUG_SEL),
+		0x13FBF17C, DRV_Reg32(MFG_DEBUG_ASYNC));
+	/* MFG_DEBUG_SEL 0x13FBF170 [23:16] MFG_DEBUG_ASYNC_SEL = 2'h0F */
+	DRV_WriteReg32(MFG_DEBUG_SEL, (DRV_Reg32(MFG_DEBUG_SEL) & ~GENMASK(23, 16)) | GENMASK(19, 16));
+	GPUFREQ_LOGB(log_buf, log_len, log_size,
+		"%-11s (0x%x): 0x%08x, (0x%x): 0x%08x",
+		"[MFG_GALS]",
+		0x13FBF170, DRV_Reg32(MFG_DEBUG_SEL),
+		0x13FBF17C, DRV_Reg32(MFG_DEBUG_ASYNC));
+
 	/* NTH_MFG_EMI1_GALS_SLV_DBG */
 	/* NTH_MFG_EMI0_GALS_SLV_DBG */
 	/* STH_MFG_EMI1_GALS_SLV_DBG */

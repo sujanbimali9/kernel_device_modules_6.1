@@ -48,6 +48,7 @@
 #define MFG_AXCOHERENCE_CON             (MFG_TOP_CFG_BASE + 0x168)            /* 0x13FBF168 */
 #define MFG_DEBUG_SEL                   (MFG_TOP_CFG_BASE + 0x170)            /* 0x13FBF170 */
 #define MFG_DEBUG_TOP                   (MFG_TOP_CFG_BASE + 0x178)            /* 0x13FBF178 */
+#define MFG_DEBUG_ASYNC                 (MFG_TOP_CFG_BASE + 0x17C)            /* 0x13FBF17C */
 #define MFG_ACTIVE_POWER_CON_CG         (MFG_TOP_CFG_BASE + 0x100)            /* 0x13FBF100 */
 #define MFG_ACTIVE_POWER_CON_ST0        (MFG_TOP_CFG_BASE + 0x120)            /* 0x13FBF120 */
 #define MFG_ACTIVE_POWER_CON_ST1        (MFG_TOP_CFG_BASE + 0x140)            /* 0x13FBF140 */
