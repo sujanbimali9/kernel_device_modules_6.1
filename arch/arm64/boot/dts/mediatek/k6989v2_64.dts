@@ -11,7 +11,7 @@
 #include "mediatek/mt6989v2_connsys.dtsi"
 
 &chosen {
-bootargs_ext = "";
+bootargs_ext = "init_sig_shut=true";
 };
 
 &mtk_leds {
