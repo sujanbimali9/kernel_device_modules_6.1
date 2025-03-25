@@ -181,6 +181,8 @@ int cmdq_ftrace_ena;
 EXPORT_SYMBOL(cmdq_ftrace_ena);
 module_param(cmdq_ftrace_ena, int, 0644);
 
+u8 gce_hw_cnt;
+
 struct cmdq_hw_trace_bit {
 	uint8_t enable : 1;
 	uint8_t dump : 1;
@@ -2918,8 +2920,9 @@ static int cmdq_probe(struct platform_device *pdev)
 	of_property_read_u32(dev->of_node, "error-irq-bug-on", &error_irq_bug_on);
 	of_property_read_u32(dev->of_node, "cmdq-pwr-log", &cmdq_pwr_log);
 	of_property_read_u32(dev->of_node, "cmdq-proc-debug-off", &cmdq_proc_debug_off);
-
-	cmdq_proc_create();
+	if (gce_hw_cnt == 0)
+		cmdq_proc_create();
+	gce_hw_cnt++;
 
 	cmdq_msg("dump_buf_size %d error irq %d cmdq_proc_debug_off:%d cmdq_tfa_read_dbg:%d",
 		cmdq_dump_buf_size,
