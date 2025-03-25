@@ -1392,6 +1392,27 @@ static int mtk_dsi_set_data_rate(struct mtk_dsi *dsi)
 	return ret;
 }
 
+static int mtk_dsi_get_data_rate_by_panel_params(struct mtk_dsi *dsi,
+	struct mtk_panel_params *panel_params)
+{
+	unsigned int data_rate = 0;
+
+	if (dsi->mipi_hopping_sta && panel_params->dyn.data_rate)
+		data_rate = panel_params->dyn.data_rate;
+	else if (panel_params->dyn_fps.data_rate)
+		data_rate = panel_params->dyn_fps.data_rate;
+	else if (panel_params->data_rate)
+		data_rate = panel_params->data_rate;
+	else if (panel_params->pll_clk)
+		data_rate = panel_params->pll_clk * 2;
+	else
+		DDPMSG("no data rate config\n");
+
+	DDPINFO("%s, data_rate=%d\n", __func__, data_rate);
+
+	return data_rate;
+}
+
 void mtk_dsi_config_null_packet(struct mtk_dsi *dsi, struct mtk_ddp_comp *comp,
 	void *handle)
 {
@@ -1934,7 +1955,8 @@ static int mtk_dsi_calculate_rw_times(struct mtk_dsi *dsi,
 	return rw_times;
 }
 
-static u32 mtk_dsi_get_line_time_ns(struct mtk_dsi *dsi, struct mtk_drm_crtc *mtk_crtc);
+static u32 mtk_dsi_get_line_time_ns(struct mtk_dsi *dsi,
+				struct mtk_drm_crtc *mtk_crtc, int mode_idx);
 
 static void mtk_dsi_tx_buf_rw(struct mtk_dsi *dsi)
 {
@@ -2108,7 +2130,7 @@ static void mtk_dsi_tx_buf_rw(struct mtk_dsi *dsi)
 		struct drm_display_mode *mode = mtk_crtc_get_display_mode_by_comp(__func__,
 						&mtk_crtc->base, comp, false);
 
-		line_time_ns = mtk_dsi_get_line_time_ns(dsi, mtk_crtc);
+		line_time_ns = mtk_dsi_get_line_time_ns(dsi, mtk_crtc, -1);
 		if (line_time_ns)
 			buf_preurgent_high = DIV_ROUND_UP(dsi->driver_data->urgent_hi_fifo_us * 1000,
 							line_time_ns);
@@ -8731,11 +8753,12 @@ unsigned int mtk_dsi_get_ps_wc(struct mtk_drm_crtc *mtk_crtc,
 }
 
 unsigned int mtk_dsi_get_line_time(struct mtk_drm_crtc *mtk_crtc,
-	struct mtk_dsi *dsi, unsigned int ps_wc)
+	struct mtk_dsi *dsi, unsigned int ps_wc, int mode_idx)
 {
 	unsigned int line_time;
-	unsigned int data_rate;
+	unsigned int data_rate = 0;
 	unsigned int null_packet_len = 0;
+	int ret = 0;
 	u32 lpx = 0, hs_prpr = 0, hs_zero = 0, hs_trail = 0, da_hs_exit = 0;
 	u32 ui = 0, cycle_time = 0;
 	struct mtk_dsi_phy_timcon *phy_timcon = NULL;
@@ -8748,38 +8771,26 @@ unsigned int mtk_dsi_get_line_time(struct mtk_drm_crtc *mtk_crtc,
 		return 0;
 	}
 
-	data_rate = mtk_dsi_default_rate(dsi);
+	if (mode_idx > -1) {
+		if (dsi->ext && dsi->ext->funcs && dsi->ext->funcs->ext_param_get) {
+			ret = dsi->ext->funcs->ext_param_get(dsi->panel, &dsi->conn,
+					&panel_params, mode_idx);
+			if (ret || !panel_params) {
+				panel_params = dsi->ext->params;
+				DDPMSG("%s, error:not support this mode:%d\n", __func__, mode_idx);
+			} else
+				data_rate = mtk_dsi_get_data_rate_by_panel_params(dsi, panel_params);
+		}
+	} else {
+		data_rate = mtk_dsi_default_rate(dsi);
+		panel_params = dsi->ext->params;
+	}
+
 	if (data_rate == 0) {
 		DDPPR_ERR("%s, data_rate is 0\n", __func__);
 		return 0;
 	}
 
-	if (mtk_crtc->mode_chg && dsi->ext->funcs
-		&& dsi->ext->funcs->ext_param_get) {
-		int ret;
-
-		ret = dsi->ext->funcs->ext_param_get(dsi->panel, &dsi->conn,
-			&panel_params, mtk_crtc->mode_idx);
-		if (ret || !panel_params) {
-			panel_params = dsi->ext->params;
-			DDPMSG("%s, error:not support this mode:%d\n",
-				__func__, mtk_crtc->mode_idx);
-		} else {
-			if (dsi->mipi_hopping_sta && panel_params->dyn.data_rate)
-				data_rate = panel_params->dyn.data_rate;
-			else if (panel_params->dyn_fps.data_rate)
-				data_rate = panel_params->dyn_fps.data_rate;
-			else if (panel_params->data_rate)
-				data_rate = panel_params->data_rate;
-			else if (panel_params->pll_clk)
-				data_rate = panel_params->pll_clk * 2;
-			else
-				DDPMSG("no data rate config\n");
-			DDPINFO("%s[%d] get panel params done! mode_idx=%d data_rate=%d\n",
-				__func__, __LINE__, mtk_crtc->mode_idx, data_rate);
-		}
-	} else
-		panel_params = dsi->ext->params;
 	if (!panel_params) {
 		DDPMSG("%s, panel params is null\n", __func__);
 		return 0;
@@ -9421,7 +9432,7 @@ unsigned long long mtk_dsi_get_frame_hrt_bw_base_by_datarate(
 			else
 				image_time = DIV_ROUND_UP(ps_wc, dsi->lanes);
 
-			line_time = mtk_dsi_get_line_time(mtk_crtc, dsi, ps_wc);
+			line_time = mtk_dsi_get_line_time(mtk_crtc, dsi, ps_wc, -1);
 
 			if (line_time > 0)
 				bw_base = bw_base * image_time / line_time;
@@ -9555,15 +9566,15 @@ unsigned long long mtk_dsi_get_frame_hrt_bw_base_by_mode(
 			else
 				image_time = DIV_ROUND_UP(ps_wc, dsi->lanes);
 
-			line_time = mtk_dsi_get_line_time(mtk_crtc, dsi, ps_wc);
+			line_time = mtk_dsi_get_line_time(mtk_crtc, dsi, ps_wc, mode_idx);
 
 			if (line_time > 0)
 				bw_base = bw_base * image_time / line_time;
 			else
 				DDPPR_ERR("invalid line_time\n");
 
-			DDPINFO("%s, image_time=%d, line_time=%d\n",
-				__func__, image_time, line_time);
+			DDPINFO("%s,mode_idx:%d, image_time=%d, line_time=%d\n",
+				__func__, mode_idx, image_time, line_time);
 		}
 
 		if (to_info.is_support) {
@@ -10246,13 +10257,14 @@ static void mtk_dsi_set_targetline(struct mtk_ddp_comp *comp,
 
 }
 
-static u32 mtk_dsi_get_line_time_ns(struct mtk_dsi *dsi, struct mtk_drm_crtc *mtk_crtc)
+static u32 mtk_dsi_get_line_time_ns(struct mtk_dsi *dsi,
+				struct mtk_drm_crtc *mtk_crtc, int mode_idx)
 {
 	u32 ps_wc = 0;
 	u32 dsi_clk = 0;
 	u32 line_time = 0;
 	u32 line_time_ns = 0;
-	unsigned int data_rate;
+	unsigned int data_rate = 0;
 
 	if (!mtk_crtc)
 		return 0;
@@ -10269,32 +10281,25 @@ static u32 mtk_dsi_get_line_time_ns(struct mtk_dsi *dsi, struct mtk_drm_crtc *mt
 	}
 
 	ps_wc = mtk_dsi_get_ps_wc(mtk_crtc, dsi);
-	data_rate = dsi->data_rate;
 
-	if (mtk_crtc->mode_chg && dsi->ext && dsi->ext->funcs
-		&& dsi->ext->funcs->ext_param_get) {
-		struct mtk_panel_params *panel_params = NULL;
-		int ret;
+	if (mode_idx > -1) {
+		if (dsi->ext && dsi->ext->funcs && dsi->ext->funcs->ext_param_get) {
+			struct mtk_panel_params *panel_params = NULL;
+			int ret = 0;
 
-		ret = dsi->ext->funcs->ext_param_get(dsi->panel, &dsi->conn,
-			&panel_params, mtk_crtc->mode_idx);
-		if (ret || !panel_params)
-			DDPMSG("%s, error:not support this mode:%d\n",
-				__func__, mtk_crtc->mode_idx);
-		else {
-			if (dsi->mipi_hopping_sta && panel_params->dyn.data_rate)
-				data_rate = panel_params->dyn.data_rate;
-			else if (panel_params->dyn_fps.data_rate)
-				data_rate = panel_params->dyn_fps.data_rate;
-			else if (panel_params->data_rate)
-				data_rate = panel_params->data_rate;
-			else if (panel_params->pll_clk)
-				data_rate = panel_params->pll_clk * 2;
+			ret = dsi->ext->funcs->ext_param_get(dsi->panel, &dsi->conn,
+					&panel_params, mode_idx);
+			if (ret || !panel_params)
+				DDPMSG("%s, error:not support this mode:%d\n", __func__, mode_idx);
 			else
-				DDPMSG("no data rate config\n");
-			DDPINFO("%s[%d] get panel params done! mode_idx=%d data_rate=%d\n",
-				__func__, __LINE__, mtk_crtc->mode_idx, data_rate);
+				data_rate = mtk_dsi_get_data_rate_by_panel_params(dsi, panel_params);
 		}
+	} else
+		data_rate = dsi->data_rate;
+
+	if (data_rate == 0) {
+		mtk_dsi_set_data_rate(dsi);
+		data_rate = dsi->data_rate;
 	}
 
 	if (dsi->ext->params->is_cphy)
@@ -10302,10 +10307,10 @@ static u32 mtk_dsi_get_line_time_ns(struct mtk_dsi *dsi, struct mtk_drm_crtc *mt
 	else
 		dsi_clk = data_rate / 8;
 
-	line_time = mtk_dsi_get_line_time(mtk_crtc, dsi, ps_wc);
+	line_time = mtk_dsi_get_line_time(mtk_crtc, dsi, ps_wc, mode_idx);
 	line_time_ns = DIV_ROUND_UP(line_time * 1000, dsi_clk);
 
-	DDPINFO("%s ps_wc=%d dsi_clk=%d line_time=%d(%dns)\n", __func__,
+	DDPINFO("%s, mode_idx:%d, ps_wc=%d dsi_clk=%d line_time=%d(%dns)\n", __func__, mode_idx,
 		ps_wc, dsi_clk, line_time, line_time_ns);
 
 	return line_time_ns;
@@ -11473,7 +11478,16 @@ static int mtk_dsi_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 		struct mtk_drm_crtc *mtk_crtc = comp->mtk_crtc;
 		unsigned int *line_time = (unsigned int *)params;
 
-		*line_time = mtk_dsi_get_line_time_ns(dsi, mtk_crtc);
+		*line_time = mtk_dsi_get_line_time_ns(dsi, mtk_crtc, -1);
+	}
+		break;
+	case DSI_GET_LINE_TIME_NS_BY_MODE:
+	{
+		struct mtk_drm_crtc *mtk_crtc = comp->mtk_crtc;
+		unsigned long long *line_time = (unsigned long long *)params;
+		int mode_idx = (int)*line_time;
+
+		*line_time = mtk_dsi_get_line_time_ns(dsi, mtk_crtc, mode_idx);
 	}
 		break;
 	case DSI_DUMP_LCM_INFO:
