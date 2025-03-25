@@ -401,32 +401,9 @@ static void __iomem *mtk_pcie_map_bus(struct pci_bus *bus, unsigned int devfn,
 static int mtk_pcie_config_read(struct pci_bus *bus, unsigned int devfn,
 				int where, int size, u32 *val)
 {
-	struct mtk_pcie_port *port = bus->sysdata;
-	u32 reg;
-	int ret;
-
 	mtk_pcie_config_tlp_header(bus, devfn, where, size);
 
-	ret = pci_generic_config_read32(bus, devfn, where, size, val);
-	if (ret)
-		return ret;
-
-	/* Only port0 use config read detect AER */
-	if (port->port_num != 0)
-		return 0;
-
-	reg = readl_relaxed(port->base + PCIE_INT_STATUS_REG);
-	if (reg & PCIE_AER_EVT) {
-		writel_relaxed(PCIE_RC_CFG, port->base + PCIE_CFGNUM_REG);
-		reg = readl_relaxed(port->base + PCIE_AER_UNC_STATUS);
-		if ((reg & PCI_ERR_UNC_COMP_TIME) && port->aer_detect) {
-			mtk_pcie_dump_link_info(port->port_num);
-			mtk_pcie_disable_data_trans(port->port_num);
-			dev_info(port->dev, "PCIe CPLTO detected!\n");
-		}
-	}
-
-	return 0;
+	return pci_generic_config_read32(bus, devfn, where, size, val);
 }
 
 static int mtk_pcie_config_write(struct pci_bus *bus, unsigned int devfn,
@@ -1081,10 +1058,12 @@ static void mtk_pcie_irq_handler(struct irq_desc *desc)
 
 	status = readl_relaxed(port->base + PCIE_INT_STATUS_REG);
 	if (status & PCIE_AER_EVT) {
+		mtk_pcie_dump_link_info(port->port_num);
+
 		writel_relaxed(PCIE_RC_CFG, port->base + PCIE_CFGNUM_REG);
-		val = readl_relaxed(port->base + PCIE_AER_CO_STATUS);
-		if (val & AER_CO_RE)
-			mtk_pcie_dump_link_info(port->port_num);
+		val = readl_relaxed(port->base + PCIE_AER_UNC_STATUS);
+		if ((val & PCI_ERR_UNC_COMP_TIME) && port->aer_detect)
+			mtk_pcie_disable_data_trans(port->port_num);
 	}
 
 	for_each_set_bit_from(irq_bit, &status, PCI_NUM_INTX +
@@ -1525,6 +1504,7 @@ void mtk_pcie_set_aer_detect(int port, bool detect)
 	}
 
 	pcie_port->aer_detect = detect;
+	pr_info("AER detect is %s\n", detect ? "enabled" : "disabled");
 }
 EXPORT_SYMBOL(mtk_pcie_set_aer_detect);
 
