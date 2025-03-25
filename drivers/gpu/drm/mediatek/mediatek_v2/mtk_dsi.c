@@ -10198,15 +10198,8 @@ static void mtk_dsi_set_targetline(struct mtk_ddp_comp *comp,
 				struct cmdq_pkt *handle, unsigned int hactive)
 {
 	u32 val = 0;
-	struct mtk_dsi *dsi = container_of(comp, struct mtk_dsi, ddp_comp);
 
-	if ((dsi != NULL) && (dsi->driver_data != NULL) &&
-		(!dsi->driver_data->dsi_targetline_ratio)) {
-		val = (hactive * dsi->driver_data->dsi_targetline_ratio) / 10;
-	} else {
-		val = (hactive * 9) / 10;
-	}
-
+	val = (hactive * 9) / 10;
 	val |= TARGET_NL_EN;
 
 	DDPINFO("%s -> h:%u, val:0x%x\n", __func__, hactive, val);
@@ -11861,7 +11854,6 @@ static const struct mtk_dsi_driver_data mt6989_dsi_driver_data = {
 	.n_verion = VER_N4,
 	.require_phy_reset = true,
 	.support_pre_urgent = true,
-	.dsi_targetline_ratio = 8,
 };
 
 static const struct mtk_dsi_driver_data mt6897_dsi_driver_data = {
