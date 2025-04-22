@@ -104,6 +104,7 @@ f mm/mmap.c
 f mm/usercopy.c
 f mm/vmalloc.c
 f net/core/rtnetlink.c
+s add_taint_module
 s asix_adjust_link
 s asix_driver
 s asix_driver_exit
@@ -300,6 +301,7 @@ s __ksymtab_mtk_mutex_remove_comp
 s __ksymtab_mtk_mutex_unprepare
 s lenovo_info
 s linux_banner
+s load_module
 s maple_tree_seed
 s mas_rev_awalk
 s mct_info
