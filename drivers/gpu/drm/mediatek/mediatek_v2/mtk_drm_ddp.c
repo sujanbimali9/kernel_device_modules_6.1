@@ -22755,8 +22755,9 @@ void mtk_ddp_insert_dsc_prim_mt6897(struct mtk_drm_crtc *mtk_crtc,
 {
 	struct mtk_panel_params *panel_ext = mtk_drm_get_lcm_ext_params(&mtk_crtc->base);
 	unsigned int addr, value;
+#ifndef DRM_BYPASS_PQ
 	struct mtk_drm_private *private = mtk_crtc->base.dev->dev_private;
-
+#endif
 	/* PANEL_COMP_OUT_CROSSBAR1_MOUT to  DISP_DSC_WRAP0 */
 #ifndef DRM_BYPASS_PQ
 	if (private->data->main_bypass_pc_path_data == mtk_crtc->path_data)

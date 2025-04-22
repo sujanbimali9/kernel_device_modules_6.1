@@ -274,8 +274,6 @@ void mtk_drm_helper_init(struct device *dev, struct mtk_drm_helper **helper_opt)
 		mtk_drm_helper_set_opt_by_name(tmp_opt,
 				"MTK_DRM_OPT_RPO", 0);
 		mtk_drm_helper_set_opt_by_name(tmp_opt,
-				"MTK_DRM_OPT_USE_PQ", 0);
-		mtk_drm_helper_set_opt_by_name(tmp_opt,
 				"MTK_DRM_OPT_OVL_BW_MONITOR", 0);
 #endif
 
