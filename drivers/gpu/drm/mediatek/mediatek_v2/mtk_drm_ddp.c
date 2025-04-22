@@ -23127,6 +23127,30 @@ void mtk_ddp_insert_dsc_prim_mt6878(struct mtk_drm_crtc *mtk_crtc,
 	value = COMP0_OUT_CB_TO_DSI0;
 	cmdq_pkt_write(handle, mtk_crtc->gce_obj.base,
 		       mtk_crtc->config_regs_pa + addr, value, ~0);
+#if IS_ENABLED(CONFIG_MTK_DISPLAY_DUAL_PIPE_DUAL_PORT_SUPPORT)
+	addr = MT6878_SPLIT_OUT_CROSSBAR4_MOUT_EN;
+	value = SPLIT_OUT_CB_TO_DSC0_1;
+	cmdq_pkt_write(handle, mtk_crtc->gce_obj.base,
+		       mtk_crtc->config_regs_pa + addr, value, ~0);
+
+	addr =  MT6878_SPLIT_OUT_CROSSBAR1_SEL_IN;
+	value = SPLIT_OUT_CB_SEL_IN_FROM_MOUT_CB4;
+	cmdq_pkt_write(handle, mtk_crtc->gce_obj.base,
+		       mtk_crtc->config_regs_pa + addr, value, ~0);
+	addr =  MT6878_SPLIT_OUT_CROSSBAR4_SEL_IN;
+	value = 0;
+	cmdq_pkt_write(handle, mtk_crtc->gce_obj.base,
+		       mtk_crtc->config_regs_pa + addr, value, ~0);
+
+	addr =  MT6878_COMP_OUT_CROSSBAR4_MOUT_EN;
+	value = 0;
+	cmdq_pkt_write(handle, mtk_crtc->gce_obj.base,
+		       mtk_crtc->config_regs_pa + addr, value, ~0);
+	addr =  MT6878_COMP_OUT_CROSSBAR1_MOUT_EN;
+	value = COMP0_OUT_CB_TO_DSI1;
+	cmdq_pkt_write(handle, mtk_crtc->gce_obj.base,
+		       mtk_crtc->config_regs_pa + addr, value, ~0);
+#endif
 }
 
 void mtk_ddp_remove_dsc_prim_mt6878(struct mtk_drm_crtc *mtk_crtc,
@@ -23157,6 +23181,30 @@ void mtk_ddp_remove_dsc_prim_mt6878(struct mtk_drm_crtc *mtk_crtc,
 	value = 0;
 	cmdq_pkt_write(handle, mtk_crtc->gce_obj.base,
 		       mtk_crtc->config_regs_pa + addr, value, ~0);
+#if IS_ENABLED(CONFIG_MTK_DISPLAY_DUAL_PIPE_DUAL_PORT_SUPPORT)
+	addr = MT6878_SPLIT_OUT_CROSSBAR4_MOUT_EN;
+	value = SPLIT_OUT_CB_TO_COMP0_OUT_CB4;
+	cmdq_pkt_write(handle, mtk_crtc->gce_obj.base,
+		       mtk_crtc->config_regs_pa + addr, value, ~0);
+
+	addr =  MT6878_SPLIT_OUT_CROSSBAR1_SEL_IN;
+	value = 0;
+	cmdq_pkt_write(handle, mtk_crtc->gce_obj.base,
+		       mtk_crtc->config_regs_pa + addr, value, ~0);
+	addr =  MT6878_SPLIT_OUT_CROSSBAR4_SEL_IN;
+	value = SPLIT_OUT_CB_SEL_IN_FROM_MOUT_CB4;
+	cmdq_pkt_write(handle, mtk_crtc->gce_obj.base,
+		       mtk_crtc->config_regs_pa + addr, value, ~0);
+
+	addr =  MT6878_COMP_OUT_CROSSBAR4_MOUT_EN;
+	value = COMP0_OUT_CB_TO_DSI1;
+	cmdq_pkt_write(handle, mtk_crtc->gce_obj.base,
+		       mtk_crtc->config_regs_pa + addr, value, ~0);
+	addr =  MT6878_COMP_OUT_CROSSBAR1_MOUT_EN;
+	value = 0;
+	cmdq_pkt_write(handle, mtk_crtc->gce_obj.base,
+		       mtk_crtc->config_regs_pa + addr, value, ~0);
+#endif
 }
 
 /* TODO: adopt for multiple platform */

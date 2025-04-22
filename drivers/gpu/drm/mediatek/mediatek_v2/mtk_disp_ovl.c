@@ -891,7 +891,11 @@ static unsigned int mtk_ovl_phy_mapping_MT6878(struct mtk_ddp_comp *comp)
 	case DDP_COMPONENT_OVL2_2L:
 		return 4;
 	case DDP_COMPONENT_OVL3_2L:
+#if IS_ENABLED(CONFIG_MTK_DISPLAY_DUAL_PIPE_DUAL_PORT_SUPPORT)
+		return 6;
+#else
 		return 0;
+#endif
 	default:
 		DDPPR_ERR("%s invalid ovl module=%d\n", __func__, comp->id);
 		return 0;
@@ -2915,8 +2919,8 @@ static void mtk_ovl_layer_config(struct mtk_ddp_comp *comp, unsigned int idx,
 		temp_peak_bw = temp_peak_bw * vrefresh;
 		do_div(temp_peak_bw, 1000);
 
-		DDPDBG("comp %d lye %u bw %llu peak %llu vtotal:%d vact:%d\n",
-			comp->id, lye_idx, temp_bw, temp_peak_bw, vtotal, vact);
+		DDPDBG("comp %d lye %u bw %llu peak %llu vtotal:%d vact:%d comp->qos_bw:%d comp->hrt_bw:%d\n",
+			comp->id, lye_idx, temp_bw, temp_peak_bw, vtotal, vact, comp->qos_bw,comp->hrt_bw);
 
 		if (mtk_drm_helper_get_opt(priv->helper_opt, MTK_DRM_OPT_OVL_BW_MONITOR) &&
 			(crtc_idx == 0) && (pending->prop_val[PLANE_PROP_COMPRESS]) &&

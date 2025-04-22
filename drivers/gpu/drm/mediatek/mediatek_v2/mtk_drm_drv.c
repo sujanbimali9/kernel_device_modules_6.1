@@ -3572,6 +3572,23 @@ static const enum mtk_ddp_comp_id mt6886_mtk_ddp_main[] = {
 };
 
 static const enum mtk_ddp_comp_id mt6878_mtk_ddp_main[] = {
+#if IS_ENABLED(CONFIG_MTK_DISPLAY_DUAL_PIPE_DUAL_PORT_SUPPORT)
+	DDP_COMPONENT_OVL0_2L,
+	DDP_COMPONENT_OVL1_2L,
+	DDP_COMPONENT_PQ0_IN_CB0,
+#ifdef DRM_BYPASS_PQ
+	DDP_COMPONENT_PQ0_OUT_CB4,
+#else
+	DDP_COMPONENT_RSZ0,
+	DDP_COMPONENT_TDSHP0,
+	DDP_COMPONENT_C3D0,
+	DDP_COMPONENT_AAL0,
+	DDP_COMPONENT_CCORR0,
+	DDP_COMPONENT_CCORR1,
+	DDP_COMPONENT_GAMMA0,	 DDP_COMPONENT_POSTMASK0,
+	DDP_COMPONENT_DITHER0,	 DDP_COMPONENT_PQ0_OUT_CB0,
+#endif
+#else
 	DDP_COMPONENT_OVL0_2L,
 	DDP_COMPONENT_OVL1_2L,
 	DDP_COMPONENT_OVL2_2L,
@@ -3586,10 +3603,32 @@ static const enum mtk_ddp_comp_id mt6878_mtk_ddp_main[] = {
 	DDP_COMPONENT_GAMMA0,	 DDP_COMPONENT_POSTMASK0,
 	DDP_COMPONENT_DITHER0,	 DDP_COMPONENT_PQ0_OUT_CB0,
 #endif
+#endif
 	DDP_COMPONENT_SPLIT_OUT_CB2,
 	DDP_COMPONENT_COMP0_OUT_CB2,
 	DDP_COMPONENT_DSI0,
 	//DDP_COMPONENT_PWM0,
+};
+
+static const enum mtk_ddp_comp_id mt6878_mtk_ddp_dual_main[] = {
+	DDP_COMPONENT_OVL2_2L,
+	DDP_COMPONENT_OVL3_2L,
+	DDP_COMPONENT_PQ0_IN_CB2,
+#ifdef DRM_BYPASS_PQ
+	DDP_COMPONENT_PQ0_OUT_CB6,
+#else
+	DDP_COMPONENT_TDSHP1,
+	DDP_COMPONENT_C3D1,
+	DDP_COMPONENT_CCORR2,
+	DDP_COMPONENT_CCORR3,
+	DDP_COMPONENT_GAMMA1,
+	DDP_COMPONENT_DITHER1,
+	DDP_COMPONENT_PQ0_OUT_CB2,
+#endif
+	DDP_COMPONENT_SPLIT_OUT_CB4,
+	//DDP_COMPONENT_DSC0,
+	DDP_COMPONENT_COMP0_OUT_CB4,
+	//DDP_COMPONENT_DSI0,
 };
 
 static const enum mtk_ddp_comp_id mt6878_mtk_ddp_third[] = {
@@ -5412,6 +5451,8 @@ static const struct mtk_crtc_path_data mt6878_mtk_main_path_data = {
 	.path[DDP_MAJOR][0] = mt6878_mtk_ddp_main,
 	.path_len[DDP_MAJOR][0] = ARRAY_SIZE(mt6878_mtk_ddp_main),
 	.path_req_hrt[DDP_MAJOR][0] = true,
+	.dual_path[0] = mt6878_mtk_ddp_dual_main,
+	.dual_path_len[0] = ARRAY_SIZE(mt6878_mtk_ddp_dual_main),
 	.addon_data = mt6878_addon_main,
 	.scaling_data = mt6878_scaling_main,
 };

@@ -9405,8 +9405,8 @@ unsigned long long mtk_dsi_get_frame_hrt_bw_base_by_datarate(
 		bw_base =  bw_base * vtotal / vact;
 		bw_base =  bw_base / 1000;
 
-		DDPDBG("%s vdo mode bw_base:%llu, vrefresh:%d\n",
-				__func__, bw_base, vrefresh);
+		DDPDBG("%s vdo mode vact:%d hact:%d vtotal:%d bw_base:%llu, vrefresh:%d\n",
+				__func__, vact, hact, vtotal, bw_base, vrefresh);
 	} else {
 		//cmd mode
 		bw_base = (unsigned long long) data_rate * dsi->lanes * compress_rate * 4;

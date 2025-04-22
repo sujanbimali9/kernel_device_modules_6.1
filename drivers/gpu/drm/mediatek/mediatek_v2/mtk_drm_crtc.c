@@ -1107,6 +1107,14 @@ void mtk_drm_crtc_analysis(struct drm_crtc *crtc)
 		mmsys_config_dump_analysis_mt6878(crtc);
 		mutex_dump_analysis_mt6878(mtk_crtc->mutex[0]);
 		mtk_vidle_dpc_analysis(false);
+		if (mtk_crtc->is_dual_pipe) {
+			DDPDUMP("anlysis dual pipe\n");
+			mtk_ddp_dual_pipe_dump(mtk_crtc);
+			for_each_comp_in_dual_pipe(comp, mtk_crtc, i, j) {
+				mtk_dump_analysis(comp);
+				mtk_dump_reg(comp);
+			}
+		}
 		break;
 	default:
 		DDPPR_ERR("%s mtk drm not support mmsys id %d\n",
@@ -4429,6 +4437,25 @@ static unsigned int dual_comp_map_mt6885(unsigned int comp_id)
 	return ret;
 }
 
+static unsigned int dual_comp_map_mt6878(unsigned int comp_id)
+{
+	unsigned int ret = 0;
+
+	switch (comp_id) {
+	case DDP_COMPONENT_OVL0_2L:
+		ret = DDP_COMPONENT_OVL2_2L;
+		break;
+	case DDP_COMPONENT_OVL1_2L:
+		ret = DDP_COMPONENT_OVL3_2L;
+		break;
+	default:
+		DDPMSG("unknown comp %u for %s\n", comp_id, __func__);
+		break;
+	}
+
+	return ret;
+}
+
 static unsigned int dual_comp_map_mt6983(unsigned int comp_id)
 {
 	unsigned int ret = 0;
@@ -4639,6 +4666,9 @@ unsigned int dual_pipe_comp_mapping(unsigned int mmsys_id, unsigned int comp_id)
 	case MMSYS_MT6885:
 		ret = dual_comp_map_mt6885(comp_id);
 		break;
+	case MMSYS_MT6878:
+		ret = dual_comp_map_mt6878(comp_id);
+		break;
 	default:
 		DDPMSG("unknown mmsys %x for %s\n", mmsys_id, __func__);
 	}
@@ -4847,7 +4877,7 @@ static void mtk_crtc_update_hrt_state(struct drm_crtc *crtc,
 	}
 
 	if (is_force_high_step)
-		bw = 7000; //max mmclk
+		bw = bw > 7000 ? bw : 7000; //max mmclk
 
 	if (mtk_drm_helper_get_opt(priv->helper_opt, MTK_DRM_OPT_OVL_BW_MONITOR) &&
 		(crtc_idx == 0) && lyeblob_ids &&
