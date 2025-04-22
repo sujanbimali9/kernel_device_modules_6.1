@@ -4877,8 +4877,11 @@ static void mtk_crtc_update_hrt_state(struct drm_crtc *crtc,
 	}
 
 	if (is_force_high_step)
+#if IS_ENABLED(CONFIG_MTK_DISPLAY_DUAL_PIPE_DUAL_PORT_SUPPORT)
 		bw = bw > 7000 ? bw : 7000; //max mmclk
-
+#else
+		bw = 7000; //max mmclk
+#endif
 	if (mtk_drm_helper_get_opt(priv->helper_opt, MTK_DRM_OPT_OVL_BW_MONITOR) &&
 		(crtc_idx == 0) && lyeblob_ids &&
 		(lyeblob_ids->frame_weight_of_bwm != 0))
