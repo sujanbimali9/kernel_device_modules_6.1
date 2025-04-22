@@ -1614,14 +1614,15 @@ static int gpufreq_validate_target(unsigned int *target)
 static void gpufreq_dump_infra_status_no_lock(char *log_buf, int *log_len, int log_size)
 {
 	gpueb_dump_status(log_buf, log_len, log_size);
-	gpufreq_dump_dvfs_status(log_buf, log_len, log_size);
-	gpufreq_dump_power_tracker_status();
 
 	/* implement on AP */
 	if (gpufreq_fp && gpufreq_fp->dump_infra_status)
 		gpufreq_fp->dump_infra_status(log_buf, log_len, log_size);
 	else
 		GPUFREQ_LOGE("null gpufreq platform function pointer (ENOENT)");
+
+	gpufreq_dump_dvfs_status(log_buf, log_len, log_size);
+	gpufreq_dump_power_tracker_status();
 }
 
 /***********************************************************************************
