@@ -118,6 +118,7 @@ static struct mtk_drm_helper help_info[] = {
 	{MTK_DRM_OPT_PER_LARB_PORT_PEAK, 0, "MTK_DRM_OPT_PER_LARB_PORT_PEAK"},
 	/* Let CRTC's atomic commit perform while another CRTC enable/disable connector */
 	{MTK_DRM_OPT_ASYNC_CONN_PWR_CTRL, 0, "MTK_DRM_OPT_ASYNC_CONN_PWR_CTRL"},
+	{MTK_DRM_OPT_MML_DL_SUB_CFG_CLINET, 0, "MTK_DRM_OPT_MML_DL_SUB_CFG_CLINET"},
 };
 
 enum DISP_HELPER_STAGE disp_helper_get_stage(void)
@@ -215,7 +216,8 @@ int mtk_drm_helper_get_opt(struct mtk_drm_helper *helper_opt,
 
 void mtk_drm_helper_init(struct device *dev, struct mtk_drm_helper **helper_opt)
 {
-	int i, value, index, ret;
+	int i, value, index1, index2, ret;
+
 	struct mtk_drm_helper *tmp_opt;
 
 	tmp_opt = kmalloc(sizeof(help_info), GFP_KERNEL);
@@ -226,13 +228,20 @@ void mtk_drm_helper_init(struct device *dev, struct mtk_drm_helper **helper_opt)
 
 	memcpy(tmp_opt, help_info, sizeof(help_info));
 	for (i = 0; i < MTK_DRM_OPT_NUM; i++) {
-		index = of_property_match_string(dev->of_node, "helper-name",
+		index1 = of_property_match_string(dev->of_node, "helper-name",
 						 help_info[i].desc);
-		if (index < 0)
+		index2 = of_property_match_string(dev->of_node, "helper-name-proj",
+								 tmp_opt[i].desc);
+		if (index1 < 0)
 			value = 0;
-		else {
+		else if (index2 >= 0) {
 			ret = of_property_read_u32_index(
-				dev->of_node, "helper-value", index, &value);
+				dev->of_node, "helper-value-proj", index2, &value);
+			if (ret < 0)
+				value = 0;
+		} else {
+			ret = of_property_read_u32_index(
+				dev->of_node, "helper-value", index1, &value);
 			if (ret < 0)
 				value = 0;
 		}
