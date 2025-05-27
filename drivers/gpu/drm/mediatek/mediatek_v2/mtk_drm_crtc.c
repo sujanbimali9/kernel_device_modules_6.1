@@ -3535,9 +3535,16 @@ static void mtk_crtc_update_hrt_usage(struct drm_crtc *crtc, bool hrt_valid)
 
 	/* For Assert layer */
 	if (mtk_crtc && mtk_drm_dal_enable()) {
+#if IS_ENABLED(CONFIG_MTK_DISPLAY_DUAL_PIPE_DUAL_PORT_SUPPORT)
+		mtk_crtc->usage_ovl_fmt[3] = 2;
+		mtk_crtc->usage_ovl_fmt[7] = 2;
+		DDPINFO("%s: need handle dal layer, bpp:%d\n",
+			__func__, mtk_crtc->usage_ovl_fmt[3]);
+#else
 		mtk_crtc->usage_ovl_fmt[5] = 2;
 		DDPINFO("%s: need handle dal layer, bpp:%d\n",
 			__func__, mtk_crtc->usage_ovl_fmt[5]);
+#endif
 	}
 
 	/* For TUI layer */
