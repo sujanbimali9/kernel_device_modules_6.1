@@ -869,6 +869,10 @@ static int mtu3_ep0_queue(struct usb_ep *ep,
 	struct mtu3 *mtu;
 	unsigned long flags;
 	int ret = 0;
+	struct usb_composite_dev *cdev;
+	struct usb_ext_cap_descriptor *usb_ext;
+	struct usb_bos_descriptor *bos;
+	struct usb_gadget *gadget;
 
 	if (!ep || !req)
 		return -EINVAL;
@@ -879,6 +883,17 @@ static int mtu3_ep0_queue(struct usb_ep *ep,
 
 	spin_lock_irqsave(&mtu->lock, flags);
 	trace_mtu3_gadget_queue(mreq);
+	cdev = get_gadget_data(&mtu->g);
+	gadget = &mtu->g;
+	bos = cdev->req->buf;
+	if(bos && bos->bDescriptorType == USB_DT_BOS) {
+		if (gadget_is_superspeed(gadget) && (!gadget->lpm_capable)) {
+			usb_ext = cdev->req->buf + le16_to_cpu(cpu_to_le16(USB_DT_BOS_SIZE));
+			if(usb_ext && usb_ext->bDevCapabilityType == USB_CAP_TYPE_EXT)
+				usb_ext->bmAttributes &= 0;
+		}
+	}
+
 	ret = ep0_queue(mep, mreq);
 	spin_unlock_irqrestore(&mtu->lock, flags);
 	return ret;

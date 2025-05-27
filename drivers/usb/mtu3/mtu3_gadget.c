@@ -847,6 +847,7 @@ int mtu3_gadget_setup(struct mtu3 *mtu)
 	mtu->g.name = MTU3_DRIVER_NAME;
 	mtu->g.irq = mtu->irq;
 	mtu->is_active = 0;
+	mtu->g.lpm_capable = mtu->u3_lpm && (mtu->max_speed > USB_SPEED_HIGH);
 	mtu->delayed_status = false;
 
 	mtu3_gadget_init_eps(mtu);
