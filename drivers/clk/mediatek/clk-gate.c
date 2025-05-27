@@ -28,7 +28,8 @@ static int mtk_cg_bit_is_cleared(struct clk_hw *hw)
 		return 0;
 
 	regmap_read(cg->regmap, cg->sta_ofs, &val);
-
+	if(!strcmp("img_ipe", clk_hw_get_name(hw)))
+		pr_info("%s %x\n",  __func__, val);
 	val &= BIT(cg->bit);
 
 	return val == 0;
@@ -202,6 +203,9 @@ static int __cg_enable_hwv(struct clk_hw *hw, bool inv)
 	mtk_clk_notify(cg->regmap, cg->hwv_regmap, clk_hw_get_name(hw),
 			cg->sta_ofs, (cg->hwv_set_ofs / MTK_HWV_ID_OFS),
 			cg->bit, CLK_EVT_HWV_CG_CHK_PWR);
+
+	if(!strcmp("img_ipe", clk_hw_get_name(hw)))
+		mtk_cg_bit_is_cleared(hw);
 
 	if (cg->flags & CLK_EN_MM_INFRA_PWR)
 		mtk_clk_mminfra_hwv_power_ctrl(false);
