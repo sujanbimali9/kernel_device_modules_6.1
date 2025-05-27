@@ -295,6 +295,7 @@ static int g_fallback_idle;
 static int g_last_commit_type;
 static int g_last_commit_api_flag;
 static unsigned long g_last_commit_before_api_boost;
+static unsigned int g_is_gpu_uncomplete;
 
 static void ged_dvfs_early_force_fallback(struct GpuUtilization_Ex *Util_Ex)
 {
@@ -1002,7 +1003,7 @@ bool ged_dvfs_gpu_freq_commit(unsigned long ui32NewFreqID,
 		ged_commit_opp_freq = ged_get_freq_by_idx(ui32NewFreqID);
 		g_last_commit_api_flag = api_sync_flag;
 		// record commit freq ID if api boost disable
-		if (api_sync_flag == 0)
+		if (api_sync_flag == 0 && g_is_gpu_uncomplete == 0)
 			g_last_commit_before_api_boost = ui32NewFreqID;
 
 		/* do change */
@@ -1137,7 +1138,7 @@ bool ged_dvfs_gpu_freq_dual_commit(unsigned long stackNewFreqID,
 	ged_commit_opp_freq = ged_get_freq_by_idx(stackNewFreqID);
 	g_last_commit_api_flag = api_sync_flag;
 	// record commit freq ID if api boost disable
-	if (api_sync_flag == 0)
+	if (api_sync_flag == 0 && g_is_gpu_uncomplete == 0)
 		g_last_commit_before_api_boost = stackNewFreqID;
 
 	/* do change, top change or stack change */
@@ -1951,6 +1952,7 @@ static int ged_dvfs_fb_gpu_dvfs(int t_gpu, int t_gpu_target,
 	}
 	// reset if not in fallback mode
 	g_fallback_idle = 0;
+	g_is_gpu_uncomplete = 0;
 
 	spin_lock_irqsave(&gsGpuUtilLock, ui32IRQFlags);
 	if (is_fallback_mode_triggered)
@@ -2406,6 +2408,7 @@ static bool ged_dvfs_policy(
 		int high = 0;
 		int low = 0;
 		int ultra_low = 0;
+		unsigned int is_enter_set_cur_freq_back = 0; // debug
 
 		/* set t_gpu via risky BQ analysis */
 		ged_kpi_update_t_gpu_latest_uncompleted();
@@ -2573,8 +2576,13 @@ static bool ged_dvfs_policy(
 		trace_tracing_mark_write(5566, "t_gpu", t_gpu);
 		trace_tracing_mark_write(5566, "t_gpu_target", t_gpu_target);
 
-		// set cur freq back to before api boost
-		if (g_last_commit_api_flag == 1 && api_sync_flag == 0) {
+		// set cur freq back to before api boost (for GPU not in overdue state)
+		if (uncomplete_flag)
+			g_is_gpu_uncomplete = 1;
+		else
+			g_is_gpu_uncomplete = 0;
+
+		if (g_last_commit_api_flag == 1 && api_sync_flag == 0 && g_is_gpu_uncomplete == 0) {
 			// if api boost with dequeue, decrease half freq
 			if (g_uncomplete_type == GED_TIMESTAMP_TYPE_D)
 				ui32GPUFreq = (ui32GPUFreq + (int)g_last_commit_before_api_boost) / 2;
@@ -2582,7 +2590,9 @@ static bool ged_dvfs_policy(
 				ui32GPUFreq = g_last_commit_before_api_boost;
 
 			i32NewFreqID = ui32GPUFreq;
+			is_enter_set_cur_freq_back = 1; // debug
 		}
+		trace_tracing_mark_write(5566, "dbg_set_f_back", is_enter_set_cur_freq_back); // debug
 
 		/* bound update */
 		if (init == 0) {
