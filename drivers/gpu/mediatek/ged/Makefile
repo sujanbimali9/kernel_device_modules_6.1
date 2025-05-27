@@ -108,8 +108,7 @@ ged-y += \
 	src/ged_kpi.o \
 	src/ged_eb.o \
 	src/ged_gpu_bm.o \
-	src/ged_gpu_slc.o \
-	src/ged_perfetto.o
+	src/ged_gpu_slc.o
 
 ged-$(CONFIG_SYNC_FILE) += src/ged_sync.o
 
