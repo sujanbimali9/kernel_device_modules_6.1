@@ -7793,7 +7793,7 @@ int mtk_crtc_fill_fb_para(struct mtk_drm_crtc *mtk_crtc)
 	} else {
 		fb_info->fb_pa = fb_base;
 		fb_info->width = ALIGN_TO_32(mtk_crtc->base.mode.hdisplay);
-		fb_info->height = ALIGN_TO_32(mtk_crtc->base.mode.vdisplay) * 3;
+		fb_info->height = ALIGN_TO_32(mtk_crtc->base.mode.vdisplay);
 		fb_info->pitch = fb_info->width * 4;
 		fb_info->size = fb_info->pitch * fb_info->height;
 
