@@ -1499,8 +1499,6 @@ static struct regname rn[] = {
 	REGNAME(afe, 0x8, AUDIO_TOP_2),
 	REGNAME(afe, 0xC, AUDIO_TOP_3),
 	REGNAME(afe, 0x10, AUDIO_TOP_4),
-	/* IMP_IIC_WRAP_C register */
-	REGNAME(impc, 0xE00, AP_CLOCK_CG),
 	/* UFSCFG_AO_BUS register */
 	REGNAME(ufscfg_ao_bus, 0x50, UFS_AO2FE_SLPPROT_EN),
 	REGNAME(ufscfg_ao_bus, 0x5c, UFS_AO2FE_SLPPROT_RDY_STA),
@@ -1510,14 +1508,6 @@ static struct regname rn[] = {
 	REGNAME(ufscfg_pdn, 0x4, UFS_PDN_CG_0),
 	/* PEXTPCFG_AO register */
 	REGNAME(pextpcfg_ao, 0x14, PEXTP_CG_0),
-	/* IMP_IIC_WRAP_EN register */
-	REGNAME(impen, 0xE00, AP_CLOCK_CG),
-	/* IMP_IIC_WRAP_ES register */
-	REGNAME(impes, 0xE00, AP_CLOCK_CG),
-	/* IMP_IIC_WRAP_S register */
-	REGNAME(imps, 0xE00, AP_CLOCK_CG),
-	/* IMP_IIC_WRAP_N register */
-	REGNAME(impn, 0xE00, AP_CLOCK_CG),
 	/* GPU_EB_RPC register */
 	REGNAME(gpu_eb_rpc, 0x70, MFG_GPU_EB_CLONED_SC_MFG1_PWR_CON),
 	REGNAME(gpu_eb_rpc, 0xFC0, XPU_PWR_STATUS),
@@ -1579,13 +1569,6 @@ static struct regname rn[] = {
 	/* VDEC_SOC_GCON_BASE register */
 	REGNAME(vde1, 0x200, LAT_CKEN),
 	REGNAME(vde1, 0x0, VDEC_CKEN),
-	/* VDEC_GCON_BASE register */
-	REGNAME(vde2, 0x200, LAT_CKEN),
-	REGNAME(vde2, 0x0, VDEC_CKEN),
-	/* VENC_GCON register */
-	REGNAME(ven1, 0x0, VENCSYS_CG),
-	/* VENC_GCON_CORE1 register */
-	REGNAME(ven2, 0x0, VENCSYS_CG),
 	/* SPM register */
 	REGNAME(spm, 0xE00, MD1_PWR_CON),
 	REGNAME(spm, 0xFB0, PWR_STATUS),
@@ -1678,9 +1661,6 @@ static struct regname rn[] = {
 	/* MDPSYS0_CONFIG register */
 	REGNAME(mdp0, 0x100, MDPSYS_CG_0),
 	REGNAME(mdp0, 0x110, MDPSYS_CG_1),
-	/* MDPSYS1_CONFIG register */
-	REGNAME(mdp1, 0x100, MDPSYS_CG_0),
-	REGNAME(mdp1, 0x110, MDPSYS_CG_1),
 	/* CCIPLL_PLL_CTRL register */
 	REGNAME(ccipll_pll_ctrl, 0x8, CCIPLL_CON0),
 	REGNAME(ccipll_pll_ctrl, 0xc, CCIPLL_CON1),
