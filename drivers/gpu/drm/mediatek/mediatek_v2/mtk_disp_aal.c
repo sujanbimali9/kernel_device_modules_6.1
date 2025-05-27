@@ -3609,6 +3609,8 @@ static int mtk_aal_user_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 			mtk_dmdp_aal_bypass(aal_data->comp_dmdp_aal, *value, handle);
 
 		if (comp->mtk_crtc->is_dual_pipe) {
+			if(aal_data->companion == NULL)
+				return -EFAULT;
 			mtk_aal_bypass(aal_data->companion, *value, handle);
 			if (aal_data->primary_data->aal_fo->mtk_dre30_support) {
 				struct mtk_disp_aal *aal_companion_data = comp_to_aal(aal_data->companion);
