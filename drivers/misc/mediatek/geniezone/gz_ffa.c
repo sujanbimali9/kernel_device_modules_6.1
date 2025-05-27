@@ -449,6 +449,7 @@ static int ffa_memory_share_read(struct args *args)
 {
 	uint32_t i;
 	unsigned char *ptr;
+	int ret = 0;
 
 	int found = 0;
 	uint32_t mem_size;
@@ -468,29 +469,34 @@ static int ffa_memory_share_read(struct args *args)
 			break;
 		}
 	}
-	ffa_mem_list_unlock();
 
 	if (found) {
 		ptr = (unsigned char *)mem_record->mem_region;
 		mem_size = mem_record->mem_size;
 	} else {
-		return -1;
+		ret = -1;
+		goto err_ret;
 	}
 
 	if (!ptr) {
 		FFA_ERR("share memory is not yet configured\n");
-		return -EFAULT;
+		ret = -EFAULT;
+		goto err_ret;
 	}
 
 	for (i = 0; i < mem_size; i++) {
 		if (ptr[i] != 'B') {
 			FFA_ERR("%s %d Test failed on ptr[%u], expect=%x, real=%x\n",
 				   __func__, __LINE__, i, 'B', ptr[i]);
-			return -EFAULT;
+			ret = -EFAULT;
+			goto err_ret;
 		}
 	}
+
 	FFA_INFO("%s test passed!\n", __func__);
-	return 0;
+err_ret:
+	ffa_mem_list_unlock();
+	return ret;
 }
 
 /**
@@ -589,7 +595,6 @@ static int gz_ffa_memory_reclaim(struct args *args)
 			break;
 		}
 	}
-	ffa_mem_list_unlock();
 
 	if (found) {
 		kfree(mem_record->origin_mem_region);
@@ -602,9 +607,10 @@ static int gz_ffa_memory_reclaim(struct args *args)
 
 		kfree(mem_record->meta_data);
 
-		ffa_mem_list_dump();
+		ffa_mem_list_unlock();
 		return 0;
 	}
+	ffa_mem_list_unlock();
 
 	ffa_mem_list_dump();
 	return -10;
