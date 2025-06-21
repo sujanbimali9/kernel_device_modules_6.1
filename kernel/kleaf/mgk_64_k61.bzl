@@ -240,7 +240,6 @@ mgk_64_k61_device_modules = [
     "drivers/misc/mediatek/apusys/apu_aov.ko",
     "drivers/misc/mediatek/apusys/power/apu_top.ko",
     "drivers/misc/mediatek/apusys/sapu/sapu.ko",
-    "drivers/misc/mediatek/atf/atf_logger.ko",
     "drivers/misc/mediatek/audio_ipi/audio_ipi.ko",
     "drivers/misc/mediatek/board_id/board_id.ko",
     "drivers/misc/mediatek/board_id/board_id_galaga.ko",
