@@ -348,7 +348,6 @@ mgk_64_k61_device_modules = [
     "drivers/misc/mediatek/mmp/src/mmprofile.ko",
     "drivers/misc/mediatek/mmqos/mmqos_wrapper.ko",
     "drivers/misc/mediatek/mmstat/trace_mmstat.ko",
-    "drivers/misc/mediatek/monitor_hang/monitor_hang.ko",
     "drivers/misc/mediatek/mtk-interconnect/mtk-icc-core.ko",
     "drivers/misc/mediatek/mtprintk/mtk_printk_ctrl.ko",
     "drivers/misc/mediatek/mtprof/bootprof.ko",
