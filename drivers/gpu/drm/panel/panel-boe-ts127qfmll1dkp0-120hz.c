@@ -1303,6 +1303,7 @@ static const struct drm_panel_funcs boe_drm_funcs = {
 
 static int boe_probe(struct mipi_dsi_device *dsi)
 {
+	struct device_node *dsi_node, *remote_node = NULL, *endpoint = NULL;
 	struct device *dev = &dsi->dev;
 	struct device_node *backlight;
 	struct boe *ctx;
@@ -1310,6 +1311,24 @@ static int boe_probe(struct mipi_dsi_device *dsi)
 	int ret;
 
 	pr_info("%s+++\n", __func__);
+
+	dsi_node = of_get_parent(dev->of_node);
+	if (dsi_node) {
+		endpoint = of_graph_get_next_endpoint(dsi_node, NULL);
+		if (endpoint) {
+			remote_node = of_graph_get_remote_port_parent(endpoint);
+			if (!remote_node) {
+				pr_info("No panel connected,skip probe lcm\n");
+				return -ENODEV;
+			}
+			pr_info("device node name:%s\n", remote_node->name);
+		}
+	}
+	if (remote_node != dev->of_node) {
+		pr_info("%s+ skip probe due to not current lcm\n", __func__);
+		return -ENODEV;
+	}
+	pr_info("It's panel-boe-ts127qfmll1dkp0-120hz\n");
 
 	ctx = devm_kzalloc(dev, sizeof(struct boe), GFP_KERNEL);
 	if (!ctx)
