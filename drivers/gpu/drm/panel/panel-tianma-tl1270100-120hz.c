@@ -869,6 +869,10 @@ static struct mtk_panel_params ext_params = {
 	.dyn_fps = {
 		.switch_en = 1,
 		.vact_timing_fps = 120,
+		.dfps_cmd_table[0] = {0, 2, {0xFF, 0x10} },
+		.dfps_cmd_table[1] = {0, 2, {0xFB, 0x01} },
+		.dfps_cmd_table[2] = {0, 2, {0xB2, 0x00} },
+		.dfps_cmd_table[3] = {0, 2, {0xB3, 0x00} },
 	},
 	.dyn = {
 		.switch_en = 1,
@@ -938,7 +942,11 @@ static struct mtk_panel_params ext_params_90hz = {
 	},
 	.dyn_fps = {
 		.switch_en = 1,
-		.vact_timing_fps = 120,
+		.vact_timing_fps = 90,
+		.dfps_cmd_table[0] = {0, 2, {0xFF, 0x10} },
+		.dfps_cmd_table[1] = {0, 2, {0xFB, 0x01} },
+		.dfps_cmd_table[2] = {0, 2, {0xB2, 0x91} },
+		.dfps_cmd_table[3] = {0, 2, {0xB3, 0x40} },
 	},
 	.dyn = {
 		.switch_en = 1,
@@ -1009,6 +1017,10 @@ static struct mtk_panel_params ext_params_60hz = {
 	.dyn_fps = {
 		.switch_en = 1,
 		.vact_timing_fps = 120,
+		.dfps_cmd_table[0] = {0, 2, {0xFF, 0x10} },
+		.dfps_cmd_table[1] = {0, 2, {0xFB, 0x01} },
+		.dfps_cmd_table[2] = {0, 2, {0xB2, 0x00} },
+		.dfps_cmd_table[3] = {0, 2, {0xB3, 0x00} },
 	},
 	.dyn = {
 		.switch_en = 1,
@@ -1079,6 +1091,10 @@ static struct mtk_panel_params ext_params_30hz = {
 	.dyn_fps = {
 		.switch_en = 1,
 		.vact_timing_fps = 120,
+		.dfps_cmd_table[0] = {0, 2, {0xFF, 0x10} },
+		.dfps_cmd_table[1] = {0, 2, {0xFB, 0x01} },
+		.dfps_cmd_table[2] = {0, 2, {0xB2, 0x00} },
+		.dfps_cmd_table[3] = {0, 2, {0xB3, 0x00} },
 	},
 	.dyn = {
 		.switch_en = 1,
