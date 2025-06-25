@@ -355,7 +355,8 @@ void disp_aal_notify_backlight_changed(struct mtk_ddp_comp *comp,
 		service_flags = AAL_SERVICE_FORCE_UPDATE;
 	} else if (atomic_read(&aal_data->primary_data->is_init_regs_valid) == 0 ||
 		(atomic_read(&aal_data->primary_data->force_relay) == 1 &&
-		!pq_data->new_persist_property[DISP_PQ_CCORR_SILKY_BRIGHTNESS])) {
+		!pq_data->new_persist_property[DISP_PQ_CCORR_SILKY_BRIGHTNESS]) ||
+		(atomic_read(&aal_data->primary_data->func_flag) == 0)) {
 		/* AAL Service is not running */
 
 		if (aal_data->primary_data->led_type != TYPE_ATOMIC)
