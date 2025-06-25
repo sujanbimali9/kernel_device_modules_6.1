@@ -1526,6 +1526,7 @@
 	};
 
 	clocks {
+		compatible = "clk-ftrace";
 		clk32k: clk32k {
 			compatible = "fixed-clock";
 			#clock-cells = <0>;
