@@ -85,6 +85,8 @@ static int mtk_cg_enable(struct clk_hw *hw)
 	mtk_cg_clr_bit(hw);
 
 	mtk_clk_notify(NULL, NULL, clk_hw_get_name(hw), 0, 1, 0, CLK_EVT_CLK_TRACE);
+	if (!mtk_cg_bit_is_cleared(hw))
+		pr_notice("%s clk enable failed\n", clk_hw_get_name(hw));
 
 	return 0;
 }
@@ -109,6 +111,8 @@ static int mtk_cg_enable_inv(struct clk_hw *hw)
 	mtk_cg_set_bit(hw);
 
 	mtk_clk_notify(NULL, NULL, clk_hw_get_name(hw), 0, 1, 0, CLK_EVT_CLK_TRACE);
+	if (!mtk_cg_bit_is_set(hw))
+		pr_notice("%s clk enable inv failed\n", clk_hw_get_name(hw));
 
 	return 0;
 }
