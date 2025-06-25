@@ -1016,7 +1016,8 @@ static s32 aal_config_frame(struct mml_comp *comp, struct mml_task *task,
 
 	regs = result->aal_regs;
 
-	mml_pq_init_comp_config_result(result);
+	if (ret)
+		mml_pq_init_comp_config_result(result);
 
 	curve = result->aal_curve;
 
