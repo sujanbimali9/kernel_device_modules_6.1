@@ -1864,8 +1864,8 @@
 			"cam_subb-4",
 			"cam_ccu-0", "cam_ccu-1", "cam_ccu-2",
 			"disp0-0", "disp0-1";
-		isp-main-supply = <&mt6319_6_vbuck1>;
-		cam-main-supply = <&mt6319_6_vbuck1>;
+		isp-vcore-supply = <&mt6319_6_vbuck1>;
+		cam-vcore-supply = <&mt6319_6_vbuck1>;
 	};
 
 	vlpcfg_reg_clk: syscon@1c00c000 {
