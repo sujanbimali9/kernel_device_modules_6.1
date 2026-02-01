@@ -13,7 +13,9 @@
 #include <linux/sched/clock.h>
 #include <linux/timer.h>
 #include <linux/delay.h>
+#if IS_ENABLED(CONFIG_NOTHING_ERROR_REPORT)
 #include <linux/nt_error_report.h>
+#endif
 
 #include <iommu_debug.h>
 #ifdef CMDQ_DCACHE_INVAL
@@ -3605,8 +3607,10 @@ void cmdq_buf_print_wfe(char *text, u32 txt_sz,
 	}
 	if (len >= txt_sz)
 		cmdq_log("len:%d over txt_sz:%d", len, txt_sz);
+#if IS_ENABLED(CONFIG_NOTHING_ERROR_REPORT)
 	if (wait_to == 998 || wait_to == 162)
 		nt_er_in_schedule(NT_DISP_ERR);
+#endif
 }
 
 static const char *cmdq_parse_logic_sop(enum CMDQ_LOGIC_ENUM s_op)
