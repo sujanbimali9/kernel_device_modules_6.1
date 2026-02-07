@@ -487,7 +487,6 @@ mgk_64_k61_device_modules = [
     "drivers/misc/mediatek/swpm/modules/debug/v6989/mtk-swpm-mml-dbg-v6989.ko",
     "drivers/misc/mediatek/swpm/mtk-swpm.ko",
     "drivers/misc/mediatek/swpm/mtk-swpm-perf-arm-pmu.ko",
-    "drivers/misc/mediatek/task_turbo/task_turbo.ko",
     "drivers/misc/mediatek/tinysys_scmi/tinysys-scmi.ko",
     "drivers/misc/mediatek/trusted_mem/ffa_v10.ko",
     "drivers/misc/mediatek/trusted_mem/tmem_ffa.ko",
