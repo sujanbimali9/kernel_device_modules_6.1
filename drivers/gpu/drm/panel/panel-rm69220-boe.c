@@ -34,14 +34,18 @@ static atomic_t current_backlight;
 #define HSA 4
 #define HBP 36
 #define HFP 22
+#ifdef TARGET_SUPPORT_30HZ
 #define HFP_30hz 1492
+#endif
 
 #define VSA 4
 #define VBP 52
 #define VFP 72
 #define VFP_90 888
 #define VFP_60 2556
+#ifdef TARGET_SUPPORT_30HZ
 #define VFP_30 72
+#endif
 
 #define HACT 1080
 #define VACT 2392
@@ -887,6 +891,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	},
 };
 
+#ifdef TARGET_SUPPORT_30HZ
 static struct mtk_panel_params ext_params_30hz = {
 	.change_fps_by_vfp_send_cmd = 1,
 	.data_rate = 885,
@@ -946,6 +951,7 @@ static struct mtk_panel_params ext_params_30hz = {
 		.aod_low_cmd_table[0] = {0, 3, {0x51, 0x00, 0x03} },          //AOD 5nit
 	},
 };
+#endif
 /*
 static int panel_doze_post_disp_on(struct drm_panel *panel,
 		void *dsi, dcs_write_gce cb, void *handle)
@@ -991,8 +997,10 @@ static int mtk_panel_ext_param_get(struct drm_panel *panel,
 		*ext_param = &ext_params_90hz;
 	} else if (drm_mode_vrefresh(m) == 60) {
 		*ext_param = &ext_params_60hz;
+#ifdef TARGET_SUPPORT_30HZ
 	} else if (drm_mode_vrefresh(m) == 30) {
 		*ext_param = &ext_params_30hz;
+#endif
 	} else
 		ret = 1;
 
@@ -1016,8 +1024,10 @@ static int mtk_panel_ext_param_set(struct drm_panel *panel,
 		ext->params = &ext_params_90hz;
 	} else if (drm_mode_vrefresh(m) == 60){
 		ext->params = &ext_params_60hz;
+#ifdef TARGET_SUPPORT_30HZ
 	} else if (drm_mode_vrefresh(m) == 30){
 		ext->params = &ext_params_30hz;
+#endif
 	} else
 		ret = 1;
 
@@ -1111,6 +1121,7 @@ static const struct drm_display_mode switch_mode_60hz = {
 	.vtotal = VACT + VFP_60 + VSA + VBP,
 };
 
+#ifdef TARGET_SUPPORT_30HZ
 static const struct drm_display_mode switch_mode_30hz = {
 	.clock = 197467,
 	.hdisplay = HACT,
@@ -1122,6 +1133,7 @@ static const struct drm_display_mode switch_mode_30hz = {
 	.vsync_end = VACT + VFP_30 + VSA,
 	.vtotal = VACT + VFP_30 + VSA + VBP,
 };
+#endif
 
 static int lcm_get_modes(struct drm_panel *panel,
 					struct drm_connector *connector)
@@ -1129,7 +1141,9 @@ static int lcm_get_modes(struct drm_panel *panel,
 	struct drm_display_mode *mode;
 	struct drm_display_mode *mode_1;
 	struct drm_display_mode *mode_2;
+#ifdef TARGET_SUPPORT_30HZ
 	struct drm_display_mode *mode_3;
+#endif
 
 	mode = drm_mode_duplicate(connector->dev, &switch_mode_120hz);
 	if (!mode) {
@@ -1164,6 +1178,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 	mode_2->type = DRM_MODE_TYPE_DRIVER;
 	drm_mode_probed_add(connector, mode_2);
 
+#ifdef TARGET_SUPPORT_30HZ
 	mode_3 = drm_mode_duplicate(connector->dev, &switch_mode_30hz);
 	if (!mode_3) {
 		dev_err(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
@@ -1174,6 +1189,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 	drm_mode_set_name(mode_3);
 	mode_3->type = DRM_MODE_TYPE_DRIVER;
 	drm_mode_probed_add(connector, mode_3);
+#endif
 
 	connector->display_info.width_mm = 70;
 	connector->display_info.height_mm = 157;
