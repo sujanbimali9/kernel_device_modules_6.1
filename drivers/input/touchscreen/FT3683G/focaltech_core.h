@@ -336,7 +336,9 @@ struct fts_ts_data {
     struct notifier_block fb_notif;
 #endif
     struct notifier_block power_level_notifier;
-
+    
+    bool single_tap_enabled;
+    bool single_tap_pressed;
 };
 
 enum _FTS_BUS_TYPE {
