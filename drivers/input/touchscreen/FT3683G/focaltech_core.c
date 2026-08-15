@@ -509,6 +509,7 @@ void fts_fod_enable(int enable)
     struct fts_ts_data *ts_data = fts_data;
 
     ts_data->fod_fp_down = false;
+    ts_data->fod_info.fp_down_report = 0;
     if (enable == FTS_FOD_ENABLE) {
         FTS_INFO("Fod enable");
         ts_data->fod_mode = ENABLE;
