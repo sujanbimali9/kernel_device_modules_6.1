@@ -339,6 +339,10 @@ struct fts_ts_data {
     
     bool single_tap_enabled;
     bool single_tap_pressed;
+#if FTS_FOD_EN
+    bool fts_fod_enabled;
+#endif
+
 };
 
 enum _FTS_BUS_TYPE {
