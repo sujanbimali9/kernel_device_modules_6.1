@@ -1486,12 +1486,21 @@ static ssize_t fts_fod_enabled_store(struct device *dev,
 static ssize_t fts_fod_pressed_show(struct device *dev,
                                     struct device_attribute *attr, char *buf)
 {
+    int fp_x = 0;
+	int fp_y = 0;
+    int fp_down = 0;
     struct fts_ts_data *ts_data = dev_get_drvdata(dev);
 
     if (!ts_data)
         return -ENODEV;
-
-    return scnprintf(buf, PAGE_SIZE, "%d\n", ts_data->fod_fp_down ? 1 : 0);
+    mutex_lock(&ts_data->input_dev->mutex);  
+    fp_down = ts_data->fod_fp_down;
+    if (fp_down) {
+        fp_x = ts_data->fod_info.fp_x;
+        fp_y = ts_data->fod_info.fp_y;
+    }
+    mutex_unlock(&ts_data->input_dev->mutex);
+    return sprintf(buf, "%d,%d,%d\n", fp_x, fp_y, fp_down);
 }
 #endif
 
