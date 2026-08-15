@@ -125,7 +125,6 @@
 #define FTS_MAX_CUSTOMER_INFO               32
 #define FTS_FOD_BUF_LEN                     9
 #define FTS_REG_FOD_INFO_ID                  0x26
-#define KEY_GESTURE_FOD                    0xF9
 #define FTS_FOD_DISABLE                      0
 #define FTS_FOD_ENABLE                      1
 #define FTS_FOD_UNCLOCK                     2

@@ -328,18 +328,12 @@ void fts_fod_report_key(struct fts_ts_data *ts_data)
     if ((ts_data->fod_fp_down) && (!ts_data->fod_info.fp_down_report)) {
         ts_data->fod_info.fp_down_report = 1;
         sysfs_notify(&ts_data->dev->kobj, NULL, "fts_fod_pressed");
-        input_report_key(ts_data->input_dev, KEY_GESTURE_FOD, 1);
-        input_sync(ts_data->input_dev);
-        FTS_DEBUG("KEY_GESTURE_FOD, 1");
         coordinate.x = ts_data->fod_info.fp_x;
         coordinate.y = ts_data->fod_info.fp_y;
         touchpanel_event_call_notifier(TOUCHPANEL_FPEVENT_DOWN, (void *)&coordinate);
     } else if ((!ts_data->fod_fp_down) && (ts_data->fod_info.fp_down_report)) {
         ts_data->fod_info.fp_down_report = 0;
-        sysfs_notify(&ts_data->dev->kobj, NULL, "fts_fod_pressed");
-        input_report_key(ts_data->input_dev, KEY_GESTURE_FOD, 0);
-        input_sync(ts_data->input_dev);
-        FTS_DEBUG("KEY_GESTURE_FOD, 0");
+        sysfs_notify(&ts_data->dev->kobj, NULL, "fts_fod_pressed");;
         coordinate.x = ts_data->fod_info.fp_x;
         coordinate.y = ts_data->fod_info.fp_y;
         touchpanel_event_call_notifier(TOUCHPANEL_FPEVENT_UP, (void *)&coordinate);
@@ -596,7 +590,6 @@ int fts_gesture_init(struct fts_ts_data *ts_data)
     input_set_capability(input_dev, EV_KEY, KEY_GESTURE_V);
     input_set_capability(input_dev, EV_KEY, KEY_GESTURE_Z);
     input_set_capability(input_dev, EV_KEY, KEY_GESTURE_C);
-    input_set_capability(input_dev, EV_KEY, KEY_GESTURE_FOD);
     input_set_capability(input_dev, EV_KEY, KEY_PALM_TO_SLEEP);
 
 
@@ -614,7 +607,6 @@ int fts_gesture_init(struct fts_ts_data *ts_data)
     __set_bit(KEY_GESTURE_V, input_dev->keybit);
     __set_bit(KEY_GESTURE_C, input_dev->keybit);
     __set_bit(KEY_GESTURE_Z, input_dev->keybit);
-    __set_bit(KEY_GESTURE_FOD, input_dev->keybit);
     __set_bit(KEY_PALM_TO_SLEEP, input_dev->keybit);
 
 
