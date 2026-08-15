@@ -51,6 +51,7 @@
 #define KEY_GESTURE_V                           KEY_V
 #define KEY_GESTURE_C                           KEY_C
 #define KEY_GESTURE_Z                           KEY_Z
+#define KEY_GESTURE_WAKEUP                     KEY_WAKEUP
 #define KEY_PALM_TO_SLEEP                       252
 
 #define GESTURE_LEFT                            0x20
@@ -58,6 +59,7 @@
 #define GESTURE_UP                              0x22
 #define GESTURE_DOWN                            0x23
 #define GESTURE_DOUBLECLICK                     0x24
+#define GESTURE_SINGLECLICK                     0x27
 #define GESTURE_O                               0x30
 #define GESTURE_W                               0x31
 #define GESTURE_M                               0x32
@@ -221,21 +223,6 @@ static ssize_t fts_gesture_bm_store(
     return count;
 }
 
-static ssize_t fts_gesture_single_tap_pressed_show(
-    struct device *dev, struct device_attribute *attr, char *buf)
-{
-    int single_tap_pressed = 0;
-    struct fts_ts_data *ts_data = dev_get_drvdata(dev);
-
-    mutex_lock(&ts_data->input_dev->mutex);
-    if (ts_data->gesture_support) {
-        single_tap_pressed = ts_data->single_tap_pressed;
-    }
-    mutex_unlock(&ts_data->input_dev->mutex);
-
-    return snprintf(buf, PAGE_SIZE, "%u\n", single_tap_pressed);
-}
-
 /* sysfs gesture node
  *   read example: cat  fts_gesture_mode       ---read gesture mode
  *   write example:echo 1 > fts_gesture_mode   --- write gesture mode to 1
@@ -252,14 +239,10 @@ static DEVICE_ATTR(fts_gesture_buf, S_IRUGO | S_IWUSR,
 static DEVICE_ATTR(fts_gesture_bm, S_IRUGO | S_IWUSR,
                    fts_gesture_bm_show, fts_gesture_bm_store);
 
-static DEVICE_ATTR(fts_gesture_single_tap_pressed, S_IRUGO,
-                   fts_gesture_single_tap_pressed_show, NULL);
-
 static struct attribute *fts_gesture_mode_attrs[] = {
     &dev_attr_fts_gesture_mode.attr,
     &dev_attr_fts_gesture_buf.attr,
     &dev_attr_fts_gesture_bm.attr,
-    &dev_attr_fts_gesture_single_tap_pressed.attr,
     NULL,
 };
 
@@ -329,7 +312,6 @@ void fts_palm_to_sleep_report_key(struct fts_ts_data *ts_data)
 static void fts_gesture_report(struct input_dev *input_dev, int gesture_id)
 {
     int gesture;
-    struct fts_ts_data *ts_data = fts_data;
 
     FTS_DEBUG("gesture_id:0x%x", gesture_id);
     switch (gesture_id) {
@@ -347,6 +329,9 @@ static void fts_gesture_report(struct input_dev *input_dev, int gesture_id)
         break;
     case GESTURE_DOUBLECLICK:
         gesture = KEY_GESTURE_U;
+        break;
+    case GESTURE_SINGLECLICK:
+        gesture = KEY_GESTURE_WAKEUP;
         break;
     case GESTURE_O:
         gesture = KEY_GESTURE_O;
@@ -380,10 +365,7 @@ static void fts_gesture_report(struct input_dev *input_dev, int gesture_id)
         break;
     }
     /* report event key */
-    if (gesture_id == 0x27) {
-		ts_data->single_tap_pressed = 1;
-		sysfs_notify(&ts_data->dev->kobj, NULL, "fts_gesture_single_tap_pressed");
-	} else if (gesture != -1) {
+    if (gesture != -1) {
         FTS_DEBUG("Gesture Code=%d", gesture);
         input_report_key(input_dev, gesture, 1);
         input_sync(input_dev);
@@ -555,6 +537,7 @@ int fts_gesture_init(struct fts_ts_data *ts_data)
     input_set_capability(input_dev, EV_KEY, KEY_GESTURE_Z);
     input_set_capability(input_dev, EV_KEY, KEY_GESTURE_C);
     input_set_capability(input_dev, EV_KEY, KEY_GESTURE_FOD);
+    input_set_capability(input_dev, EV_KEY, KEY_GESTURE_WAKEUP);
     input_set_capability(input_dev, EV_KEY, KEY_PALM_TO_SLEEP);
 
 
@@ -573,6 +556,7 @@ int fts_gesture_init(struct fts_ts_data *ts_data)
     __set_bit(KEY_GESTURE_C, input_dev->keybit);
     __set_bit(KEY_GESTURE_Z, input_dev->keybit);
     __set_bit(KEY_GESTURE_FOD, input_dev->keybit);
+    __set_bit(KEY_GESTURE_WAKEUP, input_dev->keybit);
     __set_bit(KEY_PALM_TO_SLEEP, input_dev->keybit);
 
 

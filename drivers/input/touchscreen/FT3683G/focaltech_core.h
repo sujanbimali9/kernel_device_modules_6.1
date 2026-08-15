@@ -337,7 +337,6 @@ struct fts_ts_data {
 #endif
     struct notifier_block power_level_notifier;
 
-int single_tap_pressed;
 };
 
 enum _FTS_BUS_TYPE {
