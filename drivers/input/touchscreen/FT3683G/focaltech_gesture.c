@@ -327,6 +327,7 @@ void fts_fod_report_key(struct fts_ts_data *ts_data)
     memset(&coordinate, 0, sizeof(coordinate));
     if ((ts_data->fod_fp_down) && (!ts_data->fod_info.fp_down_report)) {
         ts_data->fod_info.fp_down_report = 1;
+        sysfs_notify(&ts_data->dev->kobj, NULL, "fts_fod_pressed");
         input_report_key(ts_data->input_dev, KEY_GESTURE_FOD, 1);
         input_sync(ts_data->input_dev);
         FTS_DEBUG("KEY_GESTURE_FOD, 1");
@@ -335,6 +336,7 @@ void fts_fod_report_key(struct fts_ts_data *ts_data)
         touchpanel_event_call_notifier(TOUCHPANEL_FPEVENT_DOWN, (void *)&coordinate);
     } else if ((!ts_data->fod_fp_down) && (ts_data->fod_info.fp_down_report)) {
         ts_data->fod_info.fp_down_report = 0;
+        sysfs_notify(&ts_data->dev->kobj, NULL, "fts_fod_pressed");
         input_report_key(ts_data->input_dev, KEY_GESTURE_FOD, 0);
         input_sync(ts_data->input_dev);
         FTS_DEBUG("KEY_GESTURE_FOD, 0");
