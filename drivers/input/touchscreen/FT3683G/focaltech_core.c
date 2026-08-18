@@ -2138,6 +2138,14 @@ static int fts_ts_suspend(struct device *dev)
     return 0;
 }
 
+static void fts_suspend_work(struct work_struct *work)
+{
+    struct fts_ts_data *ts_data =
+        container_of(work, struct fts_ts_data, suspend_work);
+
+    fts_ts_suspend(ts_data->dev);
+}
+
 static int fts_ts_resume(struct device *dev)
 {
     struct fts_ts_data *ts_data = fts_data;
@@ -2255,8 +2263,9 @@ static int fb_notifier_callback(struct notifier_block *self, unsigned long event
             if (*data == MTK_DISP_BLANK_UNBLANK) {
                 if (lcm_now_state == 1) {
                     cancel_work_sync(&ts_data->resume_work);
-                    fts_ts_suspend(ts_data->dev);
+                    queue_work(fts_data->ts_workqueue, &fts_data->suspend_work);
                 } else {
+                    cancel_work_sync(&fts_data->suspend_work);
                     queue_work(fts_data->ts_workqueue, &fts_data->resume_work);
                 }
 
@@ -2269,7 +2278,7 @@ static int fb_notifier_callback(struct notifier_block *self, unsigned long event
             FTS_ERROR("event=%lu, MTK_DISP_EARLY_EVENT_BLANK=%d, lcm_now_state=%d\n", event, MTK_DISP_EARLY_EVENT_BLANK, lcm_now_state);
             if (*data == MTK_DISP_BLANK_POWERDOWN) {
                 cancel_work_sync(&ts_data->resume_work);
-                fts_ts_suspend(ts_data->dev);
+                queue_work(ts_data->ts_workqueue, &ts_data->suspend_work);
             }
         }
     } else {
@@ -2401,6 +2410,7 @@ int fts_ts_probe_entry(struct fts_ts_data *ts_data)
     if (!ts_data->ts_workqueue) {
         FTS_ERROR("create fts workqueue fail");
     } else {
+        INIT_WORK(&ts_data->suspend_work, fts_suspend_work);
         INIT_WORK(&ts_data->resume_work, fts_resume_work);
     }
     spin_lock_init(&ts_data->irq_lock);
@@ -2582,6 +2592,7 @@ err_bus_init:
 #else
     wakeup_source_unregister(ts_data->p_ws);
 #endif
+    cancel_work_sync(&ts_data->suspend_work);
     cancel_work_sync(&ts_data->resume_work);
     if (ts_data->ts_workqueue) destroy_workqueue(ts_data->ts_workqueue);
     kfree_safe(ts_data->bus_tx_buf);
@@ -2595,6 +2606,7 @@ err_bus_init:
 int fts_ts_remove_entry(struct fts_ts_data *ts_data)
 {
     FTS_FUNC_ENTER();
+    cancel_work_sync(&ts_data->suspend_work);
     cancel_work_sync(&ts_data->resume_work);
     fts_notifier_callback_exit(ts_data);
     free_irq(ts_data->irq, ts_data);
