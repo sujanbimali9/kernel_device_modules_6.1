@@ -2218,6 +2218,30 @@ static void fts_resume_work(struct work_struct *work)
     struct fts_ts_data *ts_data = container_of(work, struct fts_ts_data, resume_work);
     fts_ts_resume(ts_data->dev);
 }
+
+static void fts_gesture_work(struct work_struct *work)
+{
+    struct fts_ts_data *ts_data =
+        container_of(work, struct fts_ts_data, gesture_work.work);
+
+    if (!ts_data->suspended)
+        return;
+
+    queue_work(fts_data->ts_workqueue, &fts_data->resume_work);
+    queue_work(fts_data->ts_workqueue, &fts_data->suspend_work);
+}
+
+void fts_gesture_write(struct fts_ts_data *ts_data, bool enable)
+{
+    ts_data->gesture_support = enable;
+
+    if (!enable)
+        return;
+
+    queue_delayed_work(fts_data->ts_workqueue, &fts_data->gesture_work,
+               msecs_to_jiffies(100));
+}
+
 /*
 static int fb_notifier_callback(struct notifier_block *self, unsigned long event, void *v)
 {
@@ -2412,6 +2436,7 @@ int fts_ts_probe_entry(struct fts_ts_data *ts_data)
     } else {
         INIT_WORK(&ts_data->suspend_work, fts_suspend_work);
         INIT_WORK(&ts_data->resume_work, fts_resume_work);
+        INIT_DELAYED_WORK(&ts_data->gesture_work, fts_gesture_work);
     }
     spin_lock_init(&ts_data->irq_lock);
     mutex_init(&ts_data->report_mutex);
