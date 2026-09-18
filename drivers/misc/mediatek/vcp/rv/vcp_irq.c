@@ -78,7 +78,9 @@ static void vcp_A_wdt_handler(struct tasklet_struct *t)
 	wait_vcp_ready_to_reboot();
 	/* Wakeup mobile_log_d after vcp flush the log */
 	vcp_logger_wakeup_handler(0, NULL, NULL, 0);
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	vcp_dump_last_regs(mmup_enable_count());
+#endif
 	if (vcp_ao)
 		mtk_smi_dbg_dump_for_mminfra();
 #if VCP_RECOVERY_SUPPORT

@@ -1102,7 +1102,9 @@ static int instant_current(struct mtk_gauge *gauge, int *val,
 	if (ret == MT6375_LATCH_TIMEOUT)
 		latch_timeout = true;
 	else if (ret == -ETIMEDOUT) {
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 		aee_kernel_warning("I2C", "\nCRDISPATCH_KEY:I2C\ni2c timeout when pre_gauge_update");
+#endif
 		pr_notice("%s: latch i2c timeout, retry_cnt:%d\n", __func__, ++latch_i2c_retry_cnt);
 		post_gauge_update(gauge);
 		pre_gauge_update(gauge);
