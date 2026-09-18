@@ -3384,6 +3384,8 @@ static int vcp_device_probe(struct platform_device *pdev)
 
 	return ret;
 }
+
+#if IS_ENABLED(CONFIG_MTK_IRQ_DBG)
 void dump_vcp_irq_status(void)
 {
 	int i;
@@ -3402,7 +3404,7 @@ void dump_vcp_irq_status(void)
 
 }
 EXPORT_SYMBOL_GPL(dump_vcp_irq_status);
-
+#endif
 
 static int vcp_device_remove(struct platform_device *pdev)
 {
