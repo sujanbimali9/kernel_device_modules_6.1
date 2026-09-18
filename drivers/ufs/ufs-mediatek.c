@@ -87,7 +87,9 @@ static int ufs_nt_init_sysfs(struct ufs_hba *hba);
 
 #define UFS_WAKE_LOCK_TIMEOUT_MS	5000
 
+#if IS_ENABLED(CONFIG_MTK_IRQ_DBG)
 extern void mt_irq_dump_status(unsigned int irq);
+#endif
 static int ufs_mtk_config_mcq(struct ufs_hba *hba, bool irq);
 static void _ufs_mtk_clk_scale(struct ufs_hba *hba, bool scale_up);
 
@@ -2870,7 +2872,9 @@ static void ufs_mtk_dbg_register_dump(struct ufs_hba *hba)
 	if (ufsm_eh_in_progress(hba))
 		goto out;
 
+#if IS_ENABLED(CONFIG_MTK_IRQ_DBG)
 	mt_irq_dump_status(hba->irq);
+#endif
 
 	/* Dump ufshci register 0x0 ~ 0xA0 */
 	ufshcd_dump_regs(hba, 0, UFSHCI_REG_SPACE_SIZE, "UFSHCI (0x0):");

@@ -56,7 +56,9 @@ static char *ufs_aee_buffer;
 #include <mt-plat/aee.h>
 #endif
 
+#if IS_ENABLED(CONFIG_MTK_IRQ_DBG)
 extern void mt_irq_dump_status(unsigned int irq);
+#endif
 
 void ufs_mtk_eh_abort(unsigned int tag)
 {
@@ -77,7 +79,9 @@ void ufs_mtk_eh_unipro_set_lpm(struct ufs_hba *hba, int ret)
 	int ret2, val = 0;
 
 	/* Check if irq is pending */
+#if IS_ENABLED(CONFIG_MTK_IRQ_DBG)
 	mt_irq_dump_status(hba->irq);
+#endif
 	/* dump CPU3 callstack for debugging */
 	dev_info(hba->dev, "%s: Task dump on CPU3\n", __func__);
 	sched_show_task(cpu_curr(3));

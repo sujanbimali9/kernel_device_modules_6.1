@@ -242,6 +242,8 @@ void cmdq_util_devapc_dump(void);
 void cmdq_util_dump_fast_mtcmos(void);
 int cmdq_util_init(void);
 
+#if IS_ENABLED(CONFIG_MTK_IRQ_DBG)
 extern void mt_irq_dump_status(unsigned int irq);
+#endif
 int cmdq_util_log_feature_set(void *data, u64 val);
 #endif
