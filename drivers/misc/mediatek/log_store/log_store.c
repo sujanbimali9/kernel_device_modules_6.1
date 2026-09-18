@@ -174,7 +174,9 @@ void log_store_bootup(void)
 	store_log_to_emmc_enable(false);
 	set_boot_phase(BOOT_PHASE_ANDROID);
 	/* store printk log buff information to DRAM */
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	store_printk_buff();
+#endif
 }
 EXPORT_SYMBOL_GPL(log_store_bootup);
 
@@ -413,6 +415,7 @@ static int __init log_store_late_init(void)
 }
 
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 /* need mapping virtual address to phy address */
 void store_printk_buff(void)
 {
@@ -446,6 +449,7 @@ void store_printk_buff(void)
 		sram_dram_buff->flag);
 }
 EXPORT_SYMBOL_GPL(store_printk_buff);
+#endif
 
 void disable_early_log(void)
 {

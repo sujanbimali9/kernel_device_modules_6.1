@@ -158,7 +158,9 @@ void store_log_to_emmc_enable(bool value);
 void set_boot_phase(u32 step);
 u32 get_last_boot_phase(void);
 void log_store_bootup(void);
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 void store_printk_buff(void);
+#endif
 void disable_early_log(void);
 int dt_get_log_store(struct mem_desc_ls *data);
 void *get_sram_header(void);
@@ -196,9 +198,11 @@ static inline void  log_store_bootup(void)
 {
 }
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 static inline void store_printk_buff(void)
 {
 }
+#endif
 
 static inline void disable_early_log(void)
 {

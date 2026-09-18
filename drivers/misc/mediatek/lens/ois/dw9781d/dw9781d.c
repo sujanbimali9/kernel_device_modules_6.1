@@ -972,8 +972,10 @@ static int dw9781d_sample(struct hf_device *hfdev)
 			ois_hall_cnt++;
 			if ((ois_hall_warn == 1 && ois_hall_cnt > 5000) &&
 			    (abs(len_x) > 1000 || abs(len_y) > 1000)) {
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 				aee_kernel_warning("OV64B-OIS check fail",
 					"\nCRDISPATCH_KEY:OIS_CHECK\nLEVEL Hall pos");
+#endif
 				ois_hall_warn = 0;
 			}
 		}

@@ -28,7 +28,9 @@
 #define POLLING_RETRY 100
 
 struct vcp_dump_st {
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	uint8_t *detail_buff;
+#endif
 	uint8_t *ramdump;
 	uint32_t ramdump_length;
 	/* use prefix to get size or offset in O(1) to save memory */
@@ -84,6 +86,7 @@ static uint32_t get_MDUMP_size(enum MDUMP_t type)
 	return vcp_dump.prefix[type] - vcp_dump.prefix[type - 1];
 }
 #endif
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 static uint32_t get_MDUMP_size_accumulate(enum MDUMP_t type)
 {
 	return vcp_dump.prefix[type];
@@ -93,6 +96,7 @@ static uint8_t *get_MDUMP_addr(enum MDUMP_t type)
 {
 	return (uint8_t *)(vcp_dump.ramdump + vcp_dump.prefix[type - 1]);
 }
+#endif
 
 uint32_t vcp_dump_size_probe(struct platform_device *pdev)
 {
@@ -110,6 +114,7 @@ uint32_t vcp_dump_size_probe(struct platform_device *pdev)
 	return 0;
 }
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 void vcp_dump_last_regs(int mmup_enable)
 {
 	uint32_t *out, *out_end;
@@ -305,6 +310,7 @@ void vcp_dump_last_regs(int mmup_enable)
 	if (mminfra_debug_dump && vcp_ao)
 		mminfra_debug_dump();
 }
+#endif
 
 void vcp_do_regdump(uint32_t *out, uint32_t *out_end)
 {
@@ -482,6 +488,7 @@ static inline unsigned long vcp_do_polling(void)
 }
 
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 /*
  * this function need VCP to keeping awaken
  * vcp_crash_dump: dump vcp tcm info.
@@ -722,8 +729,7 @@ void vcp_aed(enum VCP_RESET_TYPE type, enum vcp_core_id id)
 
 	mutex_unlock(&vcp_excep_mutex);
 }
-
-
+#endif
 
 static ssize_t vcp_A_dump_show(struct file *filep,
 		struct kobject *kobj, struct bin_attribute *attr,
@@ -790,9 +796,11 @@ int vcp_excep_init(void)
 	mutex_init(&vcp_excep_mutex);
 
 	/* alloc dump memory */
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	vcp_dump.detail_buff = vmalloc(VCP_AED_STR_LEN);
 	if (!vcp_dump.detail_buff)
 		return -1;
+#endif
 
 	/* vcp_status_reg init */
 	c0_m = vmalloc(sizeof(struct vcp_status_reg));
@@ -863,7 +871,9 @@ void vcp_ram_dump_init(void)
  */
 void vcp_excep_cleanup(void)
 {
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	vfree(vcp_dump.detail_buff);
+#endif
 	vcp_A_task_context_addr = 0;
 
 	if (vcpreg.secure_dump) {

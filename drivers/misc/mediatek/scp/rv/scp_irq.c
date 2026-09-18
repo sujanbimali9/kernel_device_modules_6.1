@@ -62,7 +62,9 @@ static void scp_A_wdt_handler(struct tasklet_struct *t)
 #if SCP_RECOVERY_SUPPORT
 	if (scp_set_reset_status() == RESET_STATUS_STOP) {
 		pr_debug("[SCP] start to reset scp...\n");
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 		scp_dump_last_regs();
+#endif
 		sap_dump_last_regs();
 		scp_send_reset_wq(RESET_TYPE_WDT);
 	} else

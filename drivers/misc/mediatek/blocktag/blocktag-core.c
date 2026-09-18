@@ -58,8 +58,10 @@
 	(((struct page_pidlogger *)mtk_btag_pagelogger) + idx)
 
 /* max dump size is 300KB which can be adjusted */
+#if IS_ENABLED(CONFIG_MTK_AEE_IPANIC)
 #define BLOCKIO_AEE_BUFFER_SIZE (300 * 1024)
 char *blockio_aee_buffer;
+#endif
 
 /* procfs dentries */
 struct proc_dir_entry *btag_proc_root;
@@ -654,11 +656,11 @@ static void mtk_btag_seq_main_info(char **buff, unsigned long *size,
 			mtk_fscmd_used_mem());
 	used_mem += mtk_fscmd_used_mem();
 #endif
-
+#if IS_ENABLED(CONFIG_MTK_AEE_IPANIC)
 	BTAG_PRINTF(buff, size, seq, "aee buffer: %d bytes\n",
 			BLOCKIO_AEE_BUFFER_SIZE);
 	used_mem += BLOCKIO_AEE_BUFFER_SIZE;
-
+#endif
 	BTAG_PRINTF(buff, size, seq, "earaio control unit: %lu bytes\n",
 			sizeof(struct mtk_btag_earaio_control));
 	used_mem += sizeof(struct mtk_btag_earaio_control);
@@ -1097,8 +1099,10 @@ static void mtk_btag_init_memory(void)
 	mtk_btag_system_dram_size = (unsigned long long)(end - start);
 	pr_debug("dram: %pa - %pa, size: 0x%llx\n", &start, &end,
 		 (unsigned long long)(end - start));
+#if IS_ENABLED(CONFIG_MTK_AEE_IPANIC)
 	blockio_aee_buffer = kzalloc(BLOCKIO_AEE_BUFFER_SIZE,
 			     GFP_KERNEL);
+#endif
 }
 
 static void mtk_btag_init_pidlogger(void)
@@ -1145,6 +1149,7 @@ static int mtk_btag_init_procfs(void)
 	return 0;
 }
 
+#if IS_ENABLED(CONFIG_MTK_AEE_IPANIC)
 void mtk_btag_get_aee_buffer(unsigned long *vaddr, unsigned long *size)
 {
 	unsigned long free_size = BLOCKIO_AEE_BUFFER_SIZE;
@@ -1157,6 +1162,7 @@ void mtk_btag_get_aee_buffer(unsigned long *vaddr, unsigned long *size)
 	*size = BLOCKIO_AEE_BUFFER_SIZE - free_size;
 }
 EXPORT_SYMBOL(mtk_btag_get_aee_buffer);
+#endif
 
 static int __init mtk_btag_init(void)
 {
@@ -1177,17 +1183,23 @@ static int __init mtk_btag_init(void)
 	mtk_btag_blk_pm_init();
 #endif
 	mtk_btag_install_tracepoints();
+#if IS_ENABLED(CONFIG_MTK_AEE_IPANIC)
 	mrdump_set_extra_dump(AEE_EXTRA_FILE_BLOCKIO, mtk_btag_get_aee_buffer);
+#endif
 
 	return 0;
 }
 
 static void __exit mtk_btag_exit(void)
 {
+#if IS_ENABLED(CONFIG_MTK_AEE_IPANIC)
 	mrdump_set_extra_dump(AEE_EXTRA_FILE_BLOCKIO, NULL);
+#endif
 	proc_remove(btag_proc_root);
 	mtk_btag_uninstall_tracepoints();
+#if IS_ENABLED(CONFIG_MTK_AEE_IPANIC)
 	kfree(blockio_aee_buffer);
+#endif
 	vfree(mtk_btag_pagelogger);
 }
 

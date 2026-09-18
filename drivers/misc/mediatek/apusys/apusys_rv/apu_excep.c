@@ -330,10 +330,10 @@ static void __apu_coredump_work_func(struct mtk_apu *apu)
 		}
 		/* since exception is triggered, so bypass power off timeout check */
 		apu->bypass_pwr_off_chk = true;
-
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 		apusys_rv_exception_aee_warn(
 			apusys_assert_module_name[apu->conf_buf->ramdump_module]);
-
+#endif
 		if ((apu->platdata->flags & F_EXCEPTION_KE) && !apu->disable_ke) {
 			dev_info(dev, "%s: wait aee_kernel_exception to generate db\n", __func__);
 			msleep(30 * 1000);
@@ -512,9 +512,9 @@ static void __apu_coredump_work_func(struct mtk_apu *apu)
 	}
 	/* since exception is triggered, so bypass power off timeout check */
 	apu->bypass_pwr_off_chk = true;
-
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	apusys_rv_aee_warn("APUSYS_RV", "APUSYS_RV_TIMEOUT");
-
+#endif
 	if ((apu->platdata->flags & F_EXCEPTION_KE) && !apu->disable_ke) {
 		dev_info(dev, "%s: wait aee_kernel_exception to generate db\n", __func__);
 		msleep(30 * 1000);
