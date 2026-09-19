@@ -245,7 +245,6 @@ mgk_64_k61_device_modules = [
     "drivers/misc/mediatek/board_id/board_id.ko",
     "drivers/misc/mediatek/board_id/board_id_galaga.ko",
     "drivers/misc/mediatek/btif/common/btif_drv.ko",
-    "drivers/misc/mediatek/cache-auditor/cpuqos_v3/cpuqos_v3.ko",
     "drivers/misc/mediatek/cameraisp/dpe/camera_dpe_isp70.ko",
     "drivers/misc/mediatek/cameraisp/pda/isp_71/camera_pda.ko",
     "drivers/misc/mediatek/camera_mem/camera_mem.ko",
